@@ -4,8 +4,20 @@ namespace Daeira.Extensions
 {
     public static class MathExtensions
     {
+        
+        public struct MathfInternal
+        {
+            public const float FloatMinNormal = 1.17549435E-38f;
+            public const float FloatMinDenormal = float.Epsilon;
+
+            public const bool IsFlushToZeroEnabled = FloatMinDenormal == 0;
+        }
+        
         public const float Deg2Rad = MathF.PI * 2F / 360F;
         public const float Rad2Deg = 1F / Deg2Rad;
+        public static readonly float Epsilon =
+            MathfInternal.IsFlushToZeroEnabled ? MathfInternal.FloatMinNormal
+                : MathfInternal.FloatMinDenormal;
 
         public static float Clamp(float value, float min, float max)
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Daeira.Extensions;
@@ -10,18 +11,14 @@ namespace Daeira
         public readonly float X;
         public readonly float Y;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Float2(float x, float y)
         {
             X = x;
             Y = y;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Float2(Float2 v)
+        
+        public Float2(float value) : this(value, value)
         {
-            X = v.X;
-            Y = v.Y;
         }
 
         public float this[int index] => index switch
@@ -33,6 +30,12 @@ namespace Daeira
 
         public static readonly Float2 Zero = new Float2(0, 0);
         public static readonly Float2 One = new Float2(1, 1);
+        public static readonly Float2 UnitX = new Float2(1f, 0f);
+        public static readonly Float2 UnitY = new Float2(0f, 1f);
+        
+        private const float Epsilon = 0.00001f;
+        private const float DoubledEpsilon = Epsilon * Epsilon;
+        private const float EpsilonNormalSqrt = 1e-15f;
 
         public static readonly Float2 PositiveInfinity =
             new Float2(float.PositiveInfinity, float.PositiveInfinity);
@@ -40,48 +43,56 @@ namespace Daeira
         public static readonly Float2 NegativeInfinity =
             new Float2(float.NegativeInfinity, float.NegativeInfinity);
 
-        public float Length => MathF.Sqrt(MathF.Pow(X, 2) + MathF.Pow(Y, 2));
+        public float Length => MathF.Sqrt(X * X + Y * Y);
 
-        public float LengthSquared => MathF.Pow(X, 2) + MathF.Pow(Y, 2);
+        public float LengthSquared => X * X + Y * Y;
 
         #region Operators
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator +(Float2 v1, Float2 v2)
         {
             return new Float2(v1.X + v2.X, v1.Y + v2.Y);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator -(Float2 v1, Float2 v2)
         {
             return new Float2(v1.X - v2.X, v1.Y - v2.Y);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator *(Float2 v1, Float2 v2)
         {
             return new Float2(v1.X * v2.X, v1.Y * v2.Y);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator *(Float2 v, float scalar)
         {
             return new Float2(v.X * scalar, v.Y * scalar);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator *(float scalar, Float2 v)
         {
             return new Float2(v.X * scalar, v.Y * scalar);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator /(Float2 v, float scalar)
         {
             var inverse = 1f / scalar;
             return new Float2(v.X * inverse, v.Y * inverse);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator /(float scalar, Float2 v)
         {
             return new Float2(scalar / v.X, scalar / v.Y);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float2 operator -(Float2 v)
         {
             return new Float2(-v.X, -v.Y);
@@ -109,6 +120,16 @@ namespace Daeira
             return sqrMag < DoubledEpsilon;
         }
 
+        public static bool Equals(Float2 left, Float2 right)
+        {
+            return left == right;
+        }
+
+        public static bool FloatEquals(Float2 left, Float2 right)
+        {
+            return left.X == right.X && left.Y == right.Y;
+        }
+
         public override bool Equals(object? obj)
         {
             return obj is Float2 other && Equals(other);
@@ -119,10 +140,19 @@ namespace Daeira
             return HashCode.Combine(X, Y);
         }
 
+        #endregion
+
+        #region ToString
+
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
             return
                 $"({X.ToString(format, formatProvider)}, {Y.ToString(format, formatProvider)})";
+        }
+
+        public string ToString(string? format)
+        {
+            return ToString(format, CultureInfo.CurrentCulture);
         }
 
         public override string ToString()
@@ -132,6 +162,55 @@ namespace Daeira
 
         #endregion
 
+
+        public Float2 Normalize()
+        {
+            var length = Length;
+            if (length > Epsilon)
+            {
+                return this / length;
+            }
+
+            return Zero;
+        }
+        
+        public static Float2 Normalize(Float2 vector)
+        {
+            return vector.Normalize();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float Dot(Float2 v)
+        {
+            return X * v.X + Y * v.Y;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Dot(Float2 v1, Float2 v2)
+        {
+            return v1.X * v2.X + v1.Y * v2.Y;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float2 Reflect(Float2 normal)
+        {
+            return -2 * Dot(this, normal) * normal + this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float2 Reflect(Float2 vector, Float2 normal)
+        {
+            return -2 * Dot(vector, normal) * normal + vector;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float2 Lerp(Float2 v, float t)
+        {
+            return new Float2(X + t * (v.X - X), Y + t * (v.Y - Y));
+        }
+        
+        
         public static Float2 Lerp(Float2 a, Float2 b, float t)
         {
             t = MathExtensions.Clamp01(t);
@@ -147,64 +226,24 @@ namespace Daeira
             );
         }
 
-        public Float2 Normalize()
-        {
-            var length = Length;
-            if (length > Epsilon)
-            {
-                return this / length;
-            }
-
-            return Zero;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float Dot(Float2 v)
-        {
-            return X * v.X + Y * v.Y;
-        }
-
-        public float Cross(Float2 v)
-        {
-            return X * v.Y - Y * v.X;
-        }
-
-        public Float2 Reflect(Float2 normal)
-        {
-            // return this - 2 * Dot(normal) * normal;
-            //return 2 * normal * Dot(normal) - this;
-            var factor = -2F * Dot(normal);
-            return new Float2(factor * normal.X + X, factor * normal.Y + Y);
-            //return 2 * normal * normal.Dot(this) - this;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Float2 Lerp(Float2 v, float t)
-        {
-            return new Float2(X + t * (v.X - X), Y + t * (v.Y - Y));
-        }
-
-        private const float Epsilon = 0.00001f;
-        private const float DoubledEpsilon = Epsilon * Epsilon;
-        private const float EpsilonNormalSqrt = 1e-15f;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dot(Float2 v1, Float2 v2)
-        {
-            return v1.X * v2.X + v1.Y * v2.Y;
-        }
-
         public static float Angle(Float2 from, Float2 to)
         {
             // sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers
-            var denominator = (float) Math.Sqrt(from.LengthSquared * to.LengthSquared);
+            var denominator = MathF.Sqrt(@from.LengthSquared * to.LengthSquared);
             if (denominator < EpsilonNormalSqrt)
             {
                 return 0f;
             }
 
             var dot = MathExtensions.Clamp(Dot(from, to) / denominator, -1f, 1f);
-            return (float) Math.Acos(dot) * MathExtensions.Rad2Deg;
+            return MathF.Acos(dot) * MathExtensions.Rad2Deg;
+        }
+
+        public static float SignedAngle(Float2 from, Float2 to)
+        {
+            var unsignedAngle = Angle(from, to);
+            var sign = MathF.Sign(from.X * to.Y - from.Y * to.X);
+            return unsignedAngle * sign;
         }
 
         public static float Distance(Float2 v1, Float2 v2)
@@ -213,14 +252,37 @@ namespace Daeira
             var diffY = v1.Y - v2.Y;
             return MathF.Sqrt(diffX * diffX + diffY * diffY);
         }
-
-
-        private System.Numerics.Vector2 ToBuiltIn()
+        
+        public static float DistanceSquared(Float2 v1, Float2 v2)
         {
-            return new System.Numerics.Vector2(X, Y);
+            var diffX = v1.X - v2.X;
+            var diffY = v1.Y - v2.Y;
+            return diffX * diffX + diffY * diffY;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float2 SquareRoot(Float2 value)
+        {
+            return new Float2(
+                MathF.Sqrt(value.X),
+                MathF.Sqrt(value.Y)
+            );
+        }
+        
+        public static Float2 Abs(Float2 value)
+        {
+            return new Float2(
+                MathF.Abs(value.X),
+                MathF.Abs(value.Y)
+            );
         }
 
-        private static Float2 FromBuiltIn(System.Numerics.Vector2 vector2)
+        public Vector2 ToBuiltIn()
+        {
+            return new Vector2(X, Y);
+        }
+
+        public static Float2 FromBuiltIn(Vector2 vector2)
         {
             return new Float2(vector2.X, vector2.Y);
         }
@@ -231,8 +293,57 @@ namespace Daeira
             var matrixPosition = Matrix3x2.CreateTranslation(position.ToBuiltIn());
             var matrixRotation = Matrix3x2.CreateRotation(angle * MathExtensions.Deg2Rad, rotationAxis.ToBuiltIn());
             var transformMatrix = matrixScale * matrixRotation * matrixPosition;
-            return FromBuiltIn(System.Numerics.Vector2.Transform(vector3.ToBuiltIn(), transformMatrix));
+            return FromBuiltIn(Vector2.Transform(vector3.ToBuiltIn(), transformMatrix));
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float2 Min(Float2 value1, Float2 value2)
+        {
+            return new Float2(
+                value1.X < value2.X ? value1.X : value2.X,
+                value1.Y < value2.Y ? value1.Y : value2.Y
+            );
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float2 Max(Float2 value1, Float2 value2)
+        {
+            return new Float2(
+                value1.X > value2.X ? value1.X : value2.X,
+                value1.Y > value2.Y ? value1.Y : value2.Y
+            );
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float2 Clamp(Float2 value1, Float2 min, Float2 max)
+        {
+            // We must follow HLSL behavior in the case user specified min value is bigger than max value.
+            return Min(Max(value1, min), max);
+        }
+        
+        /// <summary>Copies the contents of the vector into the given array, starting from index.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyTo(float[] array, int index = 0)
+        {
+            if (array is null)
+            {
+                throw new NullReferenceException(nameof(array));
+            }
+
+            if (index < 0 || index >= array.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            if (array.Length - index < 2)
+            {
+                throw new ArgumentException("array.Length - index < 2");
+            }
+
+            array[index] = X;
+            array[index + 1] = Y;
+        }
+
 
 
         public static implicit operator Float2((float x, float y, float z) values) =>
