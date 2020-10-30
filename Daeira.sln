@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daeira", "Daeira\Daeira.csproj", "{9CD0AD33-11E2-4F10-BC20-4EC7E04A8A95}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CD0AD33-11E2-4F10-BC20-4EC7E04A8A95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CD0AD33-11E2-4F10-BC20-4EC7E04A8A95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CD0AD33-11E2-4F10-BC20-4EC7E04A8A95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CD0AD33-11E2-4F10-BC20-4EC7E04A8A95}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
