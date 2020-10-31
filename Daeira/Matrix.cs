@@ -442,6 +442,34 @@ namespace Daeira
             return result;
         }
 
+        /// <summary>Transposes the rows and columns of a matrix.</summary>
+        /// <param name="matrix">The source matrix.</param>
+        /// <returns>The transposed matrix.</returns>
+        public static Matrix Transpose(Matrix matrix)
+        {
+            Matrix result;
+
+            result.M11 = matrix.M11;
+            result.M12 = matrix.M21;
+            result.M13 = matrix.M31;
+            result.M14 = matrix.M41;
+            result.M21 = matrix.M12;
+            result.M22 = matrix.M22;
+            result.M23 = matrix.M32;
+            result.M24 = matrix.M42;
+            result.M31 = matrix.M13;
+            result.M32 = matrix.M23;
+            result.M33 = matrix.M33;
+            result.M34 = matrix.M43;
+            result.M41 = matrix.M14;
+            result.M42 = matrix.M24;
+            result.M43 = matrix.M34;
+            result.M44 = matrix.M44;
+
+            return result;
+        }
+
+
         public static readonly Matrix Zero = new Matrix(new Float4(0, 0, 0, 0),
             new Float4(0, 0, 0, 0),
             new Float4(0, 0, 0, 0),

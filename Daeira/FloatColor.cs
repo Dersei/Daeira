@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using Daeira.Extensions;
 
@@ -130,6 +129,26 @@ namespace Daeira
         public static implicit operator uint(FloatColor color)
         {
             return color.ToUint();
+        }
+
+        public static implicit operator Float4(FloatColor color)
+        {
+            return new Float4(color.R, color.G, color.B, color.A);
+        }
+        
+        public static implicit operator FloatColor(Float4 vector)
+        {
+            return new FloatColor(vector.X, vector.Y, vector.Z, vector.W);
+        }
+        
+        public static implicit operator Float3(FloatColor color)
+        {
+            return new Float3(color.R, color.G, color.B);
+        }
+        
+        public static implicit operator FloatColor(Float3 vector)
+        {
+            return new FloatColor(vector.X, vector.Y, vector.Z);
         }
 
         /// <summary>

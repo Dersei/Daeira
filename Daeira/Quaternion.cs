@@ -18,21 +18,15 @@ namespace Daeira
         // W component of the Quaternion. Don't modify this directly unless you know quaternions inside out.
         public readonly float W;
 
-        public float this[int index]
-        {
-            get
+        public float this[int index] =>
+            index switch
             {
-                switch (index)
-                {
-                    case 0: return X;
-                    case 1: return Y;
-                    case 2: return Z;
-                    case 3: return W;
-                    default:
-                        throw new IndexOutOfRangeException("Invalid Quaternion index!");
-                }
-            }
-        }
+                0 => X,
+                1 => Y,
+                2 => Z,
+                3 => W,
+                _ => throw new IndexOutOfRangeException("Invalid Quaternion index!")
+            };
 
         public Quaternion(float x, float y, float z, float w)
         {
@@ -43,13 +37,13 @@ namespace Daeira
         }
 
 
-        private const float KEpsilon = 0.000001F;
+        private const float Epsilon = 0.000001F;
 
         // Is the dot product of two quaternions within tolerance for them to be considered equal?
         private static bool IsEqualUsingDot(float dot)
         {
             // Returns false in the presence of NaN values.
-            return dot > 1.0f - KEpsilon;
+            return dot > 1.0f - Epsilon;
         }
 
         // Are two quaternions equal to each other?
@@ -88,10 +82,10 @@ namespace Daeira
 
         public static Quaternion operator /(Quaternion value1, Quaternion value2)
         {
-            var q1x = value1.X;
-            var q1y = value1.Y;
-            var q1z = value1.Z;
-            var q1w = value1.W;
+            var q1X = value1.X;
+            var q1Y = value1.Y;
+            var q1Z = value1.Z;
+            var q1W = value1.W;
 
             //-------------------------------------
             // Inverse part.
@@ -99,62 +93,58 @@ namespace Daeira
                      value2.Z * value2.Z + value2.W * value2.W;
             var invNorm = 1.0f / ls;
 
-            var q2x = -value2.X * invNorm;
-            var q2y = -value2.Y * invNorm;
-            var q2z = -value2.Z * invNorm;
-            var q2w = value2.W * invNorm;
+            var q2X = -value2.X * invNorm;
+            var q2Y = -value2.Y * invNorm;
+            var q2Z = -value2.Z * invNorm;
+            var q2W = value2.W * invNorm;
 
             //-------------------------------------
             // Multiply part.
 
             // cross(av, bv)
-            var cx = q1y * q2z - q1z * q2y;
-            var cy = q1z * q2x - q1x * q2z;
-            var cz = q1x * q2y - q1y * q2x;
+            var cx = q1Y * q2Z - q1Z * q2Y;
+            var cy = q1Z * q2X - q1X * q2Z;
+            var cz = q1X * q2Y - q1Y * q2X;
 
-            var dot = q1x * q2x + q1y * q2y + q1z * q2z;
+            var dot = q1X * q2X + q1Y * q2Y + q1Z * q2Z;
 
-            var ansX = q1x * q2w + q2x * q1w + cx;
-            var ansY = q1y * q2w + q2y * q1w + cy;
-            var ansZ = q1z * q2w + q2z * q1w + cz;
-            var ansW = q1w * q2w - dot;
+            var ansX = q1X * q2W + q2X * q1W + cx;
+            var ansY = q1Y * q2W + q2Y * q1W + cy;
+            var ansZ = q1Z * q2W + q2Z * q1W + cz;
+            var ansW = q1W * q2W - dot;
 
             return new Quaternion(ansX, ansY, ansZ, ansW);
         }
 
         public static Quaternion operator *(Quaternion value1, Quaternion value2)
         {
-            Quaternion ans;
+            var q1X = value1.X;
+            var q1Y = value1.Y;
+            var q1Z = value1.Z;
+            var q1W = value1.W;
 
-            var q1x = value1.X;
-            var q1y = value1.Y;
-            var q1z = value1.Z;
-            var q1w = value1.W;
-
-            var q2x = value2.X;
-            var q2y = value2.Y;
-            var q2z = value2.Z;
-            var q2w = value2.W;
+            var q2X = value2.X;
+            var q2Y = value2.Y;
+            var q2Z = value2.Z;
+            var q2W = value2.W;
 
             // cross(av, bv)
-            var cx = q1y * q2z - q1z * q2y;
-            var cy = q1z * q2x - q1x * q2z;
-            var cz = q1x * q2y - q1y * q2x;
+            var cx = q1Y * q2Z - q1Z * q2Y;
+            var cy = q1Z * q2X - q1X * q2Z;
+            var cz = q1X * q2Y - q1Y * q2X;
 
-            var dot = q1x * q2x + q1y * q2y + q1z * q2z;
+            var dot = q1X * q2X + q1Y * q2Y + q1Z * q2Z;
 
-            var ansX = q1x * q2w + q2x * q1w + cx;
-            var ansY = q1y * q2w + q2y * q1w + cy;
-            var ansZ = q1z * q2w + q2z * q1w + cz;
-            var ansW = q1w * q2w - dot;
+            var ansX = q1X * q2W + q2X * q1W + cx;
+            var ansY = q1Y * q2W + q2Y * q1W + cy;
+            var ansZ = q1Z * q2W + q2Z * q1W + cz;
+            var ansW = q1W * q2W - dot;
 
             return new Quaternion(ansX, ansY, ansZ, ansW);
         }
 
         public static Quaternion operator *(Quaternion value1, float value2)
         {
-            Quaternion ans;
-
             var ansX = value1.X * value2;
             var ansY = value1.Y * value2;
             var ansZ = value1.Z * value2;
@@ -165,8 +155,6 @@ namespace Daeira
 
         public static Quaternion operator -(Quaternion value1, Quaternion value2)
         {
-            Quaternion ans;
-
             var ansX = value1.X - value2.X;
             var ansY = value1.Y - value2.Y;
             var ansZ = value1.Z - value2.Z;
@@ -177,8 +165,6 @@ namespace Daeira
 
         public static Quaternion operator -(Quaternion value)
         {
-            Quaternion ans;
-
             var ansX = -value.X;
             var ansY = -value.Y;
             var ansZ = -value.Z;
@@ -193,31 +179,29 @@ namespace Daeira
         /// <returns>A new Quaternion representing the concatenation of the value1 rotation followed by the value2 rotation.</returns>
         public static Quaternion Concatenate(Quaternion value1, Quaternion value2)
         {
-            Quaternion ans;
-
             // Concatenate rotation is actually q2 * q1 instead of q1 * q2.
             // So that's why value2 goes q1 and value1 goes q2.
-            var q1x = value2.X;
-            var q1y = value2.Y;
-            var q1z = value2.Z;
-            var q1w = value2.W;
+            var q1X = value2.X;
+            var q1Y = value2.Y;
+            var q1Z = value2.Z;
+            var q1W = value2.W;
 
-            var q2x = value1.X;
-            var q2y = value1.Y;
-            var q2z = value1.Z;
-            var q2w = value1.W;
+            var q2X = value1.X;
+            var q2Y = value1.Y;
+            var q2Z = value1.Z;
+            var q2W = value1.W;
 
             // cross(av, bv)
-            var cx = q1y * q2z - q1z * q2y;
-            var cy = q1z * q2x - q1x * q2z;
-            var cz = q1x * q2y - q1y * q2x;
+            var cx = q1Y * q2Z - q1Z * q2Y;
+            var cy = q1Z * q2X - q1X * q2Z;
+            var cz = q1X * q2Y - q1Y * q2X;
 
-            var dot = q1x * q2x + q1y * q2y + q1z * q2z;
+            var dot = q1X * q2X + q1Y * q2Y + q1Z * q2Z;
 
-            var ansX = q1x * q2w + q2x * q1w + cx;
-            var ansY = q1y * q2w + q2y * q1w + cy;
-            var ansZ = q1z * q2w + q2z * q1w + cz;
-            var ansW = q1w * q2w - dot;
+            var ansX = q1X * q2W + q2X * q1W + cx;
+            var ansY = q1Y * q2W + q2Y * q1W + cy;
+            var ansZ = q1Z * q2W + q2Z * q1W + cz;
+            var ansW = q1W * q2W - dot;
 
             return new Quaternion(ansX, ansY, ansZ, ansW);
         }
@@ -227,8 +211,6 @@ namespace Daeira
         /// <returns>A new Quaternion that is the conjugate of the specified one.</returns>
         public static Quaternion Conjugate(Quaternion value)
         {
-            Quaternion ans;
-
             var ansX = -value.X;
             var ansY = -value.Y;
             var ansZ = -value.Z;
@@ -244,8 +226,6 @@ namespace Daeira
         /// <returns>The created Quaternion.</returns>
         public static Quaternion CreateFromAxisAngle(Float3 axis, float angle)
         {
-            Quaternion ans;
-
             var halfAngle = angle * 0.5f;
             var s = MathF.Sin(halfAngle);
             var c = MathF.Cos(halfAngle);
@@ -267,21 +247,18 @@ namespace Daeira
         {
             //  Roll first, about axis the object is facing, then
             //  pitch upward, then yaw to face into the new heading
-            float sr, cr, sp, cp, sy, cy;
 
             var halfRoll = roll * 0.5f;
-            sr = MathF.Sin(halfRoll);
-            cr = MathF.Cos(halfRoll);
+            var sr = MathF.Sin(halfRoll);
+            var cr = MathF.Cos(halfRoll);
 
             var halfPitch = pitch * 0.5f;
-            sp = MathF.Sin(halfPitch);
-            cp = MathF.Cos(halfPitch);
+            var sp = MathF.Sin(halfPitch);
+            var cp = MathF.Cos(halfPitch);
 
             var halfYaw = yaw * 0.5f;
-            sy = MathF.Sin(halfYaw);
-            cy = MathF.Cos(halfYaw);
-
-            Quaternion result;
+            var sy = MathF.Sin(halfYaw);
+            var cy = MathF.Cos(halfYaw);
 
             var resultX = cy * sp * cr + sy * cp * sr;
             var resultY = sy * cp * cr - cy * sp * sr;
@@ -300,8 +277,6 @@ namespace Daeira
             //  -1   (       a              -v       )
             // q   = ( -------------   ------------- )
             //       (  a^2 + |v|^2  ,  a^2 + |v|^2  )
-
-            Quaternion ans;
 
             var ls = value.X * value.X + value.Y * value.Y + value.Z * value.Z + value.W * value.W;
             var invNorm = 1.0f / ls;
@@ -325,14 +300,12 @@ namespace Daeira
             var t = amount;
             var t1 = 1.0f - t;
 
-            Quaternion r = default;
-
             var dot = quaternion1.X * quaternion2.X + quaternion1.Y * quaternion2.Y +
                       quaternion1.Z * quaternion2.Z + quaternion1.W * quaternion2.W;
-            var rX = 0f;
-            var rY = 0f;
-            var rZ = 0f;
-            var rW = 0f;
+            float rX;
+            float rY;
+            float rZ;
+            float rW;
             if (dot >= 0.0f)
             {
                 rX = t1 * quaternion1.X + t * quaternion2.X;
@@ -360,13 +333,66 @@ namespace Daeira
             return new Quaternion(rX, rY, rZ, rW);
         }
 
+        /// <summary>Creates a Quaternion from the given rotation matrix.</summary>
+        /// <param name="matrix">The rotation matrix.</param>
+        /// <returns>The created Quaternion.</returns>
+        public static Quaternion CreateFromRotationMatrix(Matrix matrix)
+        {
+            var trace = matrix.M11 + matrix.M22 + matrix.M33;
+
+            float qX;
+            float qY;
+            float qZ;
+            float qW;
+
+            if (trace > 0.0f)
+            {
+                var s = MathF.Sqrt(trace + 1.0f);
+                qW = s * 0.5f;
+                s = 0.5f / s;
+                qX = (matrix.M23 - matrix.M32) * s;
+                qY = (matrix.M31 - matrix.M13) * s;
+                qZ = (matrix.M12 - matrix.M21) * s;
+            }
+            else
+            {
+                if (matrix.M11 >= matrix.M22 && matrix.M11 >= matrix.M33)
+                {
+                    var s = MathF.Sqrt(1.0f + matrix.M11 - matrix.M22 - matrix.M33);
+                    var invS = 0.5f / s;
+                    qX = 0.5f * s;
+                    qY = (matrix.M12 + matrix.M21) * invS;
+                    qZ = (matrix.M13 + matrix.M31) * invS;
+                    qW = (matrix.M32 - matrix.M23) * invS;
+                }
+                else if (matrix.M22 > matrix.M33)
+                {
+                    var s = MathF.Sqrt(1.0f + matrix.M22 - matrix.M11 - matrix.M33);
+                    var invS = 0.5f / s;
+                    qX = (matrix.M12 + matrix.M21) * invS;
+                    qY = 0.5f * s;
+                    qZ = (matrix.M23 + matrix.M32) * invS;
+                    qW = (matrix.M13 - matrix.M31) * invS;
+                }
+                else
+                {
+                    var s = MathF.Sqrt(1.0f + matrix.M33 - matrix.M11 - matrix.M22);
+                    var invS = 0.5f / s;
+                    qX = (matrix.M13 + matrix.M31) * invS;
+                    qY = (matrix.M23 + matrix.M32) * invS;
+                    qZ = 0.5f * s;
+                    qW = (matrix.M21 - matrix.M12) * invS;
+                }
+            }
+
+            return new Quaternion(qX, qY, qZ, qW);
+        }
+
         /// <summary>Divides each component of the Quaternion by the length of the Quaternion.</summary>
         /// <param name="value">The source Quaternion.</param>
         /// <returns>The normalized Quaternion.</returns>
         public static Quaternion Normalize(Quaternion value)
         {
-            Quaternion ans;
-
             var ls = value.X * value.X + value.Y * value.Y + value.Z * value.Z + value.W * value.W;
 
             var invNorm = 1.0f / MathF.Sqrt(ls);
@@ -403,11 +429,11 @@ namespace Daeira
 
             float s1, s2;
 
-            if (cosOmega > (1.0f - SlerpEpsilon))
+            if (cosOmega > 1.0f - SlerpEpsilon)
             {
                 // Too close, do straight linear interpolation.
                 s1 = 1.0f - t;
-                s2 = (flip) ? -t : t;
+                s2 = flip ? -t : t;
             }
             else
             {
@@ -415,12 +441,10 @@ namespace Daeira
                 var invSinOmega = 1 / MathF.Sin(omega);
 
                 s1 = MathF.Sin((1.0f - t) * omega) * invSinOmega;
-                s2 = (flip)
+                s2 = flip
                     ? -MathF.Sin(t * omega) * invSinOmega
                     : MathF.Sin(t * omega) * invSinOmega;
             }
-
-            Quaternion ans;
 
             var ansX = s1 * quaternion1.X + s2 * quaternion2.X;
             var ansY = s1 * quaternion1.Y + s2 * quaternion2.Y;
@@ -433,18 +457,11 @@ namespace Daeira
 
         /// <summary>Calculates the length of the Quaternion.</summary>
         /// <returns>The computed length of the Quaternion.</returns>
-        public readonly float Length()
-        {
-            var lengthSquared = LengthSquared();
-            return MathF.Sqrt(lengthSquared);
-        }
+        public float Length => MathF.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
         /// <summary>Calculates the length squared of the Quaternion. This operation is cheaper than Length().</summary>
         /// <returns>The length squared of the Quaternion.</returns>
-        public readonly float LengthSquared()
-        {
-            return X * X + Y * Y + Z * Z + W * W;
-        }
+        public float LengthSquared => X * X + Y * Y + Z * Z + W * W;
 
         // also required for being able to use Quaternions as keys in hash tables
         public override bool Equals(object? other)

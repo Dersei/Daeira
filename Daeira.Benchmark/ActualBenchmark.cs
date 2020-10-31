@@ -15,31 +15,67 @@ namespace Daeira.Benchmark
             v = new Vector3(0, -100, 0);
         }
 
+        // [Benchmark]
+        // public bool TestFloat3Immutable()
+        // {
+        //     Float3 f = new Float3();
+        //     Float3 f1 = new Float3(1, 1, 2);
+        //     var result = true;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result = f == f1;
+        //         f1 *= 2;
+        //     }
+        //
+        //     return result;
+        // }
+
+        // [Benchmark]
+        // public bool TestVector3()
+        // {
+        //     Vector3 f = new Vector3();
+        //     Vector3 f1 = new Vector3(1, 1, 2);
+        //     var result = true;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result = f == f1;
+        //         f1 *= 2;
+        //     }
+        //
+        //     return result;
+        // }
+
         [Benchmark]
-        public bool TestFloat3Immutable()
+        public Matrix Transpose()
         {
-            Float3 f = new Float3();
-            Float3 f1 = new Float3(1, 1, 2);
-            var result = true;
-            for (var i = 0; i < 1000; i++)
+            var m = new Matrix(
+                new Float4(1, 2, 3, 4),
+                new Float4(5, 6, 7, 8),
+                new Float4(9, 10, 11, 12),
+                new Float4(13, 14, 15, 16)
+            );
+            var result = new Matrix();
+            for (int i = 0; i < 100; i++)
             {
-                result = f == f1;
-                f1 *= 2;
+                result = Matrix.Transpose(m);
             }
 
             return result;
         }
-
+        
         [Benchmark]
-        public bool TestVector3()
+        public Matrix4x4 Transpose4x4()
         {
-            Vector3 f = new Vector3();
-            Vector3 f1 = new Vector3(1, 1, 2);
-            var result = true;
-            for (var i = 0; i < 1000; i++)
+            var m = new Matrix4x4(
+                1, 2, 3, 4,
+                5, 6, 7, 8,
+                9, 10, 11, 12,
+                13, 14, 15, 16
+            );
+            var result = new Matrix4x4();
+            for (int i = 0; i < 100; i++)
             {
-                result = f == f1;
-                f1 *= 2;
+                result = Matrix4x4.Transpose(m);
             }
 
             return result;
