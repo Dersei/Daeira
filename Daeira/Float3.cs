@@ -23,7 +23,7 @@ namespace Daeira
         {
         }
 
-        public Float3(Float2 value, float z) : this(value.X, value.Y, z)
+        public Float3(Float2 vector, float z) : this(vector.X, vector.Y, z)
         {
         }
 
@@ -187,9 +187,9 @@ namespace Daeira
             return Zero;
         }
         
-        public static Float3 Normalize(Float3 vector)
+        public static Float3 Normalize(Float3 v)
         {
-            return vector.Normalize();
+            return v.Normalize();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -236,24 +236,24 @@ namespace Daeira
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Float3 Lerp(Float3 v, float t)
+        public Float3 Lerp(Float3 vector, float t)
         {
-            return new Float3(X + t * (v.X - X), Y + t * (v.Y - Y), Z + t * (v.Z - Z));
+            return new Float3(X + t * (vector.X - X), Y + t * (vector.Y - Y), Z + t * (vector.Z - Z));
         }
         
-        public static Float3 Lerp(Float3 a, Float3 b, float t)
+        public static Float3 Lerp(Float3 v1, Float3 v2, float t)
         {
             t = MathExtensions.Clamp01(t);
-            return LerpUnclamped(a, b, t);
+            return LerpUnclamped(v1, v2, t);
         }
 
         // Linearly interpolates between two vectors without clamping the interpolant
-        public static Float3 LerpUnclamped(Float3 a, Float3 b, float t)
+        public static Float3 LerpUnclamped(Float3 v1, Float3 v2, float t)
         {
             return new Float3(
-                a.X + (b.X - a.X) * t,
-                a.Y + (b.Y - a.Y) * t,
-                a.Z + (b.Z - a.Z) * t
+                v1.X + (v2.X - v1.X) * t,
+                v1.Y + (v2.Y - v1.Y) * t,
+                v1.Z + (v2.Z - v1.Z) * t
             );
         }
 
@@ -298,21 +298,21 @@ namespace Daeira
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 SquareRoot(Float3 value)
+        public static Float3 SquareRoot(Float3 vector)
         {
             return new Float3(
-                MathF.Sqrt(value.X),
-                MathF.Sqrt(value.Y),
-                MathF.Sqrt(value.Z)
+                MathF.Sqrt(vector.X),
+                MathF.Sqrt(vector.Y),
+                MathF.Sqrt(vector.Z)
             );
         }
         
-        public static Float3 Abs(Float3 value)
+        public static Float3 Abs(Float3 vector)
         {
             return new Float3(
-                MathF.Abs(value.X),
-                MathF.Abs(value.Y),
-                MathF.Abs(value.Z)
+                MathF.Abs(vector.X),
+                MathF.Abs(vector.Y),
+                MathF.Abs(vector.Z)
             );
         }
 
@@ -326,43 +326,43 @@ namespace Daeira
             return new Float3(vector3.X, vector3.Y, vector3.Z);
         }
 
-        public static Float3 Transform(Float3 float3, float scale, Float3 position, Float3 rotationAxis,
+        public static Float3 Transform(Float3 vector, float scale, Float3 position, Float3 rotationAxis,
             float angle)
         {
-            var matrixScale = Matrix4x4.CreateScale(scale);
-            var matrixPosition = Matrix4x4.CreateTranslation(position.ToBuiltIn());
+            var matrixScale = System.Numerics.Matrix4x4.CreateScale(scale);
+            var matrixPosition = System.Numerics.Matrix4x4.CreateTranslation(position.ToBuiltIn());
             var matrixRotation =
-                Matrix4x4.CreateFromAxisAngle(rotationAxis.ToBuiltIn(), angle * MathExtensions.Deg2Rad);
+                System.Numerics.Matrix4x4.CreateFromAxisAngle(rotationAxis.ToBuiltIn(), angle * MathExtensions.Deg2Rad);
             var transformMatrix = matrixScale * matrixRotation * matrixPosition;
-            return FromBuiltIn(Vector3.Transform(float3.ToBuiltIn(), transformMatrix));
+            return FromBuiltIn(Vector3.Transform(vector.ToBuiltIn(), transformMatrix));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 Min(Float3 value1, Float3 value2)
+        public static Float3 Min(Float3 v1, Float3 v2)
         {
             return new Float3(
-                value1.X < value2.X ? value1.X : value2.X,
-                value1.Y < value2.Y ? value1.Y : value2.Y,
-                value1.Z < value2.Z ? value1.Z : value2.Z
+                v1.X < v2.X ? v1.X : v2.X,
+                v1.Y < v2.Y ? v1.Y : v2.Y,
+                v1.Z < v2.Z ? v1.Z : v2.Z
             );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 Max(Float3 value1, Float3 value2)
+        public static Float3 Max(Float3 v1, Float3 v2)
         {
             return new Float3(
-                value1.X > value2.X ? value1.X : value2.X,
-                value1.Y > value2.Y ? value1.Y : value2.Y,
-                value1.Z > value2.Z ? value1.Z : value2.Z
+                v1.X > v2.X ? v1.X : v2.X,
+                v1.Y > v2.Y ? v1.Y : v2.Y,
+                v1.Z > v2.Z ? v1.Z : v2.Z
             );
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 Clamp(Float3 value1, Float3 min, Float3 max)
+        public static Float3 Clamp(Float3 vector, Float3 min, Float3 max)
         {
             // We must follow HLSL behavior in the case user specified min value is bigger than max value.
-            return Min(Max(value1, min), max);
+            return Min(Max(vector, min), max);
         }
 
 

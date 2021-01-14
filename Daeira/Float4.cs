@@ -51,7 +51,6 @@ namespace Daeira
 
         private const float Epsilon = 0.00001f;
         private const float DoubledEpsilon = Epsilon * Epsilon;
-        private const float EpsilonNormalSqrt = 1e-15f;
 
         public static readonly Float4 PositiveInfinity =
             new Float4(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
@@ -133,14 +132,14 @@ namespace Daeira
             var diffX = X - other.X;
             var diffY = Y - other.Y;
             var diffZ = Z - other.Z;
-            var diffW = Z - other.Z;
+            var diffW = W - other.W;
             var sqrMag = diffX * diffX + diffY * diffY + diffZ * diffZ + diffW * diffW;
             return sqrMag < DoubledEpsilon;
         }
 
         public static bool Equals(Float4 left, Float4 right)
         {
-            return left == right;
+            return left.Equals(right);
         }
 
         public static bool FloatEquals(Float4 left, Float4 right)
@@ -203,9 +202,9 @@ namespace Daeira
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dot(Float4 v1, Float4 v2)
+        public static float Dot(Float4 a, Float4 b)
         {
-            return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z + v1.W * v2.W;
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z + a.W * b.W;
         }
 
 
@@ -237,21 +236,21 @@ namespace Daeira
             );
         }
 
-        public static float Distance(Float4 v1, Float4 v2)
+        public static float Distance(Float4 a, Float4 b)
         {
-            var diffX = v1.X - v2.X;
-            var diffY = v1.Y - v2.Y;
-            var diffZ = v1.Z - v2.Z;
-            var diffW = v1.W - v2.W;
+            var diffX = a.X - b.X;
+            var diffY = a.Y - b.Y;
+            var diffZ = a.Z - b.Z;
+            var diffW = a.W - b.W;
             return MathF.Sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ + diffW * diffW);
         }
 
-        public static float DistanceSquared(Float4 v1, Float4 v2)
+        public static float DistanceSquared(Float4 a, Float4 b)
         {
-            var diffX = v1.X - v2.X;
-            var diffY = v1.Y - v2.Y;
-            var diffZ = v1.Z - v2.Z;
-            var diffW = v1.W - v2.W;
+            var diffX = a.X - b.X;
+            var diffY = a.Y - b.Y;
+            var diffZ = a.Z - b.Z;
+            var diffW = a.W - b.W;
             return diffX * diffX + diffY * diffY + diffZ * diffZ + diffW * diffW;
         }
 
@@ -287,33 +286,33 @@ namespace Daeira
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float4 Min(Float4 value1, Float4 value2)
+        public static Float4 Min(Float4 a, Float4 b)
         {
             return new Float4(
-                value1.X < value2.X ? value1.X : value2.X,
-                value1.Y < value2.Y ? value1.Y : value2.Y,
-                value1.Z < value2.Z ? value1.Z : value2.Z,
-                value1.W < value2.W ? value1.W : value2.W
+                a.X < b.X ? a.X : b.X,
+                a.Y < b.Y ? a.Y : b.Y,
+                a.Z < b.Z ? a.Z : b.Z,
+                a.W < b.W ? a.W : b.W
             );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float4 Max(Float4 value1, Float4 value2)
+        public static Float4 Max(Float4 a, Float4 b)
         {
             return new Float4(
-                value1.X > value2.X ? value1.X : value2.X,
-                value1.Y > value2.Y ? value1.Y : value2.Y,
-                value1.Z > value2.Z ? value1.Z : value2.Z,
-                value1.W > value2.W ? value1.W : value2.W
+                a.X > b.X ? a.X : b.X,
+                a.Y > b.Y ? a.Y : b.Y,
+                a.Z > b.Z ? a.Z : b.Z,
+                a.W > b.W ? a.W : b.W
             );
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float4 Clamp(Float4 value1, Float4 min, Float4 max)
+        public static Float4 Clamp(Float4 value, Float4 min, Float4 max)
         {
             // We must follow HLSL behavior in the case user specified min value is bigger than max value.
-            return Min(Max(value1, min), max);
+            return Min(Max(value, min), max);
         }
 
 

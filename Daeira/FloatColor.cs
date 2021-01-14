@@ -18,40 +18,58 @@ namespace Daeira
             B = b;
             A = a;
         }
+        
+        public FloatColor(Float3 vector, float a = 1f)
+        {
+            R = vector.X;
+            G = vector.Y;
+            B = vector.Z;
+            A = a;
+        }
+        
+        public FloatColor(Float4 vector)
+        {
+            R = vector.X;
+            G = vector.Y;
+            B = vector.Z;
+            A = vector.W;
+        }
 
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor operator +(FloatColor v1, FloatColor v2)
         {
             return new FloatColor(v1.R + v2.R, v1.G + v2.G, v1.B + v2.B, v1.A + v2.A);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor operator -(FloatColor v1, FloatColor v2)
         {
             return new FloatColor(v1.R - v2.R, v1.G - v2.G, v1.B - v2.B, v1.A - v2.A);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor operator *(FloatColor color, int value)
         {
             return new FloatColor(color.R * value, color.G * value, color.B * value, color.A * value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor operator *(FloatColor color, float value)
         {
             return new FloatColor(color.R * value, color.G * value, color.B * value, color.A * value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor operator /(FloatColor color, float value)
         {
             return new FloatColor(color.R / value, color.G / value, color.B / value, color.A / value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor operator *(FloatColor color1, FloatColor color2)
         {
-            var r = color1.R * color2.R;
-            var g = color1.G * color2.G;
-            var b = color1.B * color2.B;
-            var a = color1.A * color2.A;
-            return new FloatColor(r, g, b, a);
+            return new FloatColor(color1.R * color2.R, color1.G * color2.G, color1.B * color2.B, color1.A * color2.A);
         }
 
         /// <summary>
@@ -62,7 +80,7 @@ namespace Daeira
         public static FloatColor FromNormal(Float3 normal)
         {
             var converted = (normal + Float3.One) / 2;
-            return new FloatColor(converted.X, converted.Y, converted.Z);
+            return new FloatColor(converted);
         }
 
         /// <summary>
@@ -72,9 +90,9 @@ namespace Daeira
         /// <returns></returns>
         public static FloatColor FromVector(Float3 vector)
         {
-            return new FloatColor(vector.X, vector.Y, vector.Z);
+            return new FloatColor(vector);
         }
-        
+
         /// <summary>
         /// Creates a new color from the vector.
         /// </summary>
@@ -83,8 +101,9 @@ namespace Daeira
         public static FloatColor FromVectorSafe(Float3 vector)
         {
             vector = vector.Normalize();
-            vector = new Float3(MathExtensions.Clamp01(vector.X),MathExtensions.Clamp01(vector.Y), MathExtensions.Clamp01(vector.Z));
-            return new FloatColor(vector.X, vector.Y, vector.Z);
+            vector = new Float3(MathExtensions.Clamp01(vector.X), MathExtensions.Clamp01(vector.Y),
+                MathExtensions.Clamp01(vector.Z));
+            return new FloatColor(vector);
         }
 
         public static FloatColor FromRgb(float r, float g, float b)
@@ -109,13 +128,34 @@ namespace Daeira
         }
 
         /// <summary>
-        /// Converts <c>FloatColor</c> to <c>uint</c>
+        /// Converts <c>FloatColor</c> to <c>uint</c> in ARGB format
         /// </summary>
         /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ToUint()
         {
             var a = ClampValue(A * 255);
+            var r = ClampValue(R * 255);
+            var g = ClampValue(G * 255);
+            var b = ClampValue(B * 255);
+            return (a << 24) | (r << 16) | (g << 8) | b;
+        }
+
+        /// <summary>
+        /// Returns <c>FloatColor</c> as <c>uint</c> in ARGB format
+        /// </summary>
+        /// <returns></returns>
+        public uint Argb()
+        {
+            return ToUint();
+        }
+
+        /// <summary>
+        /// Returns <c>FloatColor</c> as <c>uint</c> in RGB format with A = 255
+        /// </summary>
+        /// <returns></returns>
+        public uint Rgb()
+        {
+            const uint a = 255u;
             var r = ClampValue(R * 255);
             var g = ClampValue(G * 255);
             var b = ClampValue(B * 255);
@@ -135,20 +175,20 @@ namespace Daeira
         {
             return new Float4(color.R, color.G, color.B, color.A);
         }
-        
+
         public static implicit operator FloatColor(Float4 vector)
         {
-            return new FloatColor(vector.X, vector.Y, vector.Z, vector.W);
+            return new FloatColor(vector);
         }
-        
+
         public static implicit operator Float3(FloatColor color)
         {
             return new Float3(color.R, color.G, color.B);
         }
-        
+
         public static implicit operator FloatColor(Float3 vector)
         {
-            return new FloatColor(vector.X, vector.Y, vector.Z);
+            return new FloatColor(vector);
         }
 
         /// <summary>
@@ -165,19 +205,19 @@ namespace Daeira
             return System.Drawing.Color.FromArgb(a, r, g, b);
         }
 
-        public static FloatColor Black = new FloatColor(0, 0, 0, 1);
-        public static FloatColor White = new FloatColor(1, 1, 1, 1);
-        public static FloatColor Grey = new FloatColor(0.5f, 0.5f, 0.5f, 1);
-        public static FloatColor Red = new FloatColor(1, 0, 0, 1);
-        public static FloatColor Blue = new FloatColor(0, 0, 1, 1);
-        public static FloatColor Green = new FloatColor(0, 1, 0, 1);
-        public static FloatColor Yellow = new FloatColor(1, 1, 0, 1);
-        public static FloatColor UnityYellow = new FloatColor(1, 235f / 255f, 4f / 255f, 1);
-        public static FloatColor Cyan = new FloatColor(0, 1, 1, 1);
-        public static FloatColor Magenta = new FloatColor(1, 0, 1, 1);
-        public static FloatColor Purple = new FloatColor(1, 0, 1, 1);
-        public static FloatColor Error = new FloatColor(1, 0, 0.5647059F, 1);
-        public static FloatColor Clear = new FloatColor(0, 0, 0, 0);
+        public static readonly FloatColor Black = new FloatColor(0, 0, 0);
+        public static readonly FloatColor White = new FloatColor(1, 1, 1);
+        public static readonly FloatColor Grey = new FloatColor(0.5f, 0.5f, 0.5f);
+        public static readonly FloatColor Red = new FloatColor(1, 0, 0);
+        public static readonly FloatColor Blue = new FloatColor(0, 0, 1);
+        public static readonly FloatColor Green = new FloatColor(0, 1, 0);
+        public static readonly FloatColor Yellow = new FloatColor(1, 1, 0);
+        public static readonly FloatColor UnityYellow = new FloatColor(1, 235f / 255f, 4f / 255f);
+        public static readonly FloatColor Cyan = new FloatColor(0, 1, 1);
+        public static readonly FloatColor Magenta = new FloatColor(1, 0, 1);
+        public static readonly FloatColor Purple = new FloatColor(1, 0, 1);
+        public static readonly FloatColor Error = new FloatColor(1, 0, 0.5647059F);
+        public static readonly FloatColor Clear = new FloatColor(0, 0, 0, 0);
 
         public float Grayscale => 0.299F * R + 0.587F * G + 0.114F * B;
         public float MaxColorComponent => MathF.Max(MathF.Max(R, G), B);
@@ -302,7 +342,7 @@ namespace Daeira
             var b = value.B > 0.0031308f ? 1.055f * MathF.Pow(value.B, 1.0f / 2.4f) - 0.055f : 12.92f * value.B;
             return new FloatColor(r, g, b);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor ConvertToGamma(FloatColor value)
         {

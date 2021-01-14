@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.Arm;
+using System.Runtime.Intrinsics.X86;
 using Daeira.Extensions;
 
 namespace Daeira
@@ -10,6 +14,9 @@ namespace Daeira
         public float M21;
         public float M31;
         public float M41;
+        /// <summary>
+        /// First row, second column
+        /// </summary>
         public float M12;
         public float M22;
         public float M32;
@@ -43,8 +50,8 @@ namespace Daeira
             M44 = column4.W;
         }
 
-        public Matrix(float m11, float m21, float m31, float m41, float m12, float m22, float m32, float m42, float m13,
-            float m23, float m33, float m43, float m14, float m24, float m34, float m44)
+        public Matrix(float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24, float m31,
+            float m32, float m33, float m34, float m41, float m42, float m43, float m44)
         {
             M11 = m11;
             M21 = m21;
@@ -238,44 +245,223 @@ namespace Daeira
 {M41.ToString(format, formatProvider)}    {M42.ToString(format, formatProvider)}    {M43.ToString(format, formatProvider)}    {M44.ToString(format, formatProvider)}{Environment.NewLine}";
         }
 
-        public static Matrix operator *(Matrix lhs, Matrix rhs)
+        public static unsafe Matrix operator *(Matrix left, Matrix right)
         {
+            if (AdvSimd.Arm64.IsSupported)
+            {
+                Unsafe.SkipInit(out Matrix result);
+
+                // Perform the operation on the first row
+
+                var m11 = AdvSimd.LoadVector128(&left.M11);
+
+                var vX = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M11), m11, 0);
+                var vY = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M12), m11, 1);
+                var vZ =
+                    AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vX, AdvSimd.LoadVector128(&right.M13), m11, 2);
+                var vW =
+                    AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vY, AdvSimd.LoadVector128(&right.M14), m11, 3);
+
+                AdvSimd.Store(&result.M11, AdvSimd.Add(vZ, vW));
+
+                // Repeat for the other 3 rows
+
+                var m12 = AdvSimd.LoadVector128(&left.M12);
+
+                vX = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M11), m12, 0);
+                vY = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M12), m12, 1);
+                vZ = AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vX, AdvSimd.LoadVector128(&right.M13), m12, 2);
+                vW = AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vY, AdvSimd.LoadVector128(&right.M14), m12, 3);
+
+                AdvSimd.Store(&result.M21, AdvSimd.Add(vZ, vW));
+
+                var m13 = AdvSimd.LoadVector128(&left.M13);
+
+                vX = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M11), m13, 0);
+                vY = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M12), m13, 1);
+                vZ = AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vX, AdvSimd.LoadVector128(&right.M13), m13, 2);
+                vW = AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vY, AdvSimd.LoadVector128(&right.M14), m13, 3);
+
+                AdvSimd.Store(&result.M13, AdvSimd.Add(vZ, vW));
+
+                var m14 = AdvSimd.LoadVector128(&left.M14);
+
+                vX = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M11), m14, 0);
+                vY = AdvSimd.MultiplyBySelectedScalar(AdvSimd.LoadVector128(&right.M12), m14, 1);
+                vZ = AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vX, AdvSimd.LoadVector128(&right.M13), m14, 2);
+                vW = AdvSimd.Arm64.FusedMultiplyAddBySelectedScalar(vY, AdvSimd.LoadVector128(&right.M14), m14, 3);
+
+                AdvSimd.Store(&result.M14, AdvSimd.Add(vZ, vW));
+
+                return result;
+            }
+
+            if (Sse.IsSupported)
+            {
+                var row = Sse.LoadVector128(&left.M11);
+                Sse.Store(&left.M11,
+                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&right.M11)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&right.M12))),
+                        Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&right.M13)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&right.M14)))));
+
+                // 0x00 is _MM_SHUFFLE(0,0,0,0), 0x55 is _MM_SHUFFLE(1,1,1,1), etc.
+                // TODO: Replace with a method once it's added to the API.
+
+                row = Sse.LoadVector128(&left.M12);
+                Sse.Store(&left.M12,
+                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&right.M11)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&right.M12))),
+                        Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&right.M13)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&right.M14)))));
+
+                row = Sse.LoadVector128(&left.M13);
+                Sse.Store(&left.M13,
+                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&right.M11)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&right.M12))),
+                        Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&right.M13)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&right.M14)))));
+
+                row = Sse.LoadVector128(&left.M14);
+                Sse.Store(&left.M14,
+                    Sse.Add(Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0x00), Sse.LoadVector128(&right.M11)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0x55), Sse.LoadVector128(&right.M12))),
+                        Sse.Add(Sse.Multiply(Sse.Shuffle(row, row, 0xAA), Sse.LoadVector128(&right.M13)),
+                            Sse.Multiply(Sse.Shuffle(row, row, 0xFF), Sse.LoadVector128(&right.M14)))));
+                return left;
+            }
+
             Matrix res;
-            res.M11 = lhs.M11 * rhs.M11 + lhs.M12 * rhs.M21 + lhs.M13 * rhs.M31 + lhs.M14 * rhs.M41;
-            res.M12 = lhs.M11 * rhs.M12 + lhs.M12 * rhs.M22 + lhs.M13 * rhs.M32 + lhs.M14 * rhs.M42;
-            res.M13 = lhs.M11 * rhs.M13 + lhs.M12 * rhs.M23 + lhs.M13 * rhs.M33 + lhs.M14 * rhs.M43;
-            res.M14 = lhs.M11 * rhs.M14 + lhs.M12 * rhs.M24 + lhs.M13 * rhs.M34 + lhs.M14 * rhs.M44;
+            res.M11 = left.M11 * right.M11 + left.M12 * right.M21 + left.M13 * right.M31 + left.M14 * right.M41;
+            res.M12 = left.M11 * right.M12 + left.M12 * right.M22 + left.M13 * right.M32 + left.M14 * right.M42;
+            res.M13 = left.M11 * right.M13 + left.M12 * right.M23 + left.M13 * right.M33 + left.M14 * right.M43;
+            res.M14 = left.M11 * right.M14 + left.M12 * right.M24 + left.M13 * right.M34 + left.M14 * right.M44;
 
-            res.M21 = lhs.M21 * rhs.M11 + lhs.M22 * rhs.M21 + lhs.M23 * rhs.M31 + lhs.M24 * rhs.M41;
-            res.M22 = lhs.M21 * rhs.M12 + lhs.M22 * rhs.M22 + lhs.M23 * rhs.M32 + lhs.M24 * rhs.M42;
-            res.M23 = lhs.M21 * rhs.M13 + lhs.M22 * rhs.M23 + lhs.M23 * rhs.M33 + lhs.M24 * rhs.M43;
-            res.M24 = lhs.M21 * rhs.M14 + lhs.M22 * rhs.M24 + lhs.M23 * rhs.M34 + lhs.M24 * rhs.M44;
+            res.M21 = left.M21 * right.M11 + left.M22 * right.M21 + left.M23 * right.M31 + left.M24 * right.M41;
+            res.M22 = left.M21 * right.M12 + left.M22 * right.M22 + left.M23 * right.M32 + left.M24 * right.M42;
+            res.M23 = left.M21 * right.M13 + left.M22 * right.M23 + left.M23 * right.M33 + left.M24 * right.M43;
+            res.M24 = left.M21 * right.M14 + left.M22 * right.M24 + left.M23 * right.M34 + left.M24 * right.M44;
 
-            res.M31 = lhs.M31 * rhs.M11 + lhs.M32 * rhs.M21 + lhs.M33 * rhs.M31 + lhs.M34 * rhs.M41;
-            res.M32 = lhs.M31 * rhs.M12 + lhs.M32 * rhs.M22 + lhs.M33 * rhs.M32 + lhs.M34 * rhs.M42;
-            res.M33 = lhs.M31 * rhs.M13 + lhs.M32 * rhs.M23 + lhs.M33 * rhs.M33 + lhs.M34 * rhs.M43;
-            res.M34 = lhs.M31 * rhs.M14 + lhs.M32 * rhs.M24 + lhs.M33 * rhs.M34 + lhs.M34 * rhs.M44;
+            res.M31 = left.M31 * right.M11 + left.M32 * right.M21 + left.M33 * right.M31 + left.M34 * right.M41;
+            res.M32 = left.M31 * right.M12 + left.M32 * right.M22 + left.M33 * right.M32 + left.M34 * right.M42;
+            res.M33 = left.M31 * right.M13 + left.M32 * right.M23 + left.M33 * right.M33 + left.M34 * right.M43;
+            res.M34 = left.M31 * right.M14 + left.M32 * right.M24 + left.M33 * right.M34 + left.M34 * right.M44;
 
-            res.M41 = lhs.M41 * rhs.M11 + lhs.M42 * rhs.M21 + lhs.M43 * rhs.M31 + lhs.M44 * rhs.M41;
-            res.M42 = lhs.M41 * rhs.M12 + lhs.M42 * rhs.M22 + lhs.M43 * rhs.M32 + lhs.M44 * rhs.M42;
-            res.M43 = lhs.M41 * rhs.M13 + lhs.M42 * rhs.M23 + lhs.M43 * rhs.M33 + lhs.M44 * rhs.M43;
-            res.M44 = lhs.M41 * rhs.M14 + lhs.M42 * rhs.M24 + lhs.M43 * rhs.M34 + lhs.M44 * rhs.M44;
+            res.M41 = left.M41 * right.M11 + left.M42 * right.M21 + left.M43 * right.M31 + left.M44 * right.M41;
+            res.M42 = left.M41 * right.M12 + left.M42 * right.M22 + left.M43 * right.M32 + left.M44 * right.M42;
+            res.M43 = left.M41 * right.M13 + left.M42 * right.M23 + left.M43 * right.M33 + left.M44 * right.M43;
+            res.M44 = left.M41 * right.M14 + left.M42 * right.M24 + left.M43 * right.M34 + left.M44 * right.M44;
 
             return res;
         }
 
-        public static Float4 operator *(Matrix lhs, Float4 vector)
+        public static unsafe Float4 operator *(Matrix left, Float4 vector)
         {
-            var resultX = lhs.M11 * vector.X + lhs.M12 * vector.Y + lhs.M13 * vector.Z + lhs.M14 * vector.W;
-            var resultY = lhs.M21 * vector.X + lhs.M22 * vector.Y + lhs.M23 * vector.Z + lhs.M24 * vector.W;
-            var resultZ = lhs.M31 * vector.X + lhs.M32 * vector.Y + lhs.M33 * vector.Z + lhs.M34 * vector.W;
-            var resultW = lhs.M41 * vector.X + lhs.M42 * vector.Y + lhs.M43 * vector.Z + lhs.M44 * vector.W;
+            
+            if (AdvSimd.IsSupported)
+            {
+                Unsafe.SkipInit(out Float4 result);
+                var valueX = Vector128.Create(vector.X);
+                var valueY = Vector128.Create(vector.Y);
+                var valueZ = Vector128.Create(vector.Z);
+                var valueW = Vector128.Create(vector.W);
+                AdvSimd.Store(&result.X, AdvSimd.Add(Sse.Add(Sse.Add(
+                            AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M11), valueX), 
+                            AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M12), valueY)),
+                        AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M13), valueZ)),
+                    AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M14), valueW)));
+                return result;
+            }
+            
+            if (Sse.IsSupported)
+            {
+                Unsafe.SkipInit(out Float4 result);
+                var valueX = Vector128.Create(vector.X);
+                var valueY = Vector128.Create(vector.Y);
+                var valueZ = Vector128.Create(vector.Z);
+                var valueW = Vector128.Create(vector.W);
+                Sse.Store(&result.X, Sse.Add(Sse.Add(Sse.Add(
+                    Sse.Multiply(Sse.LoadVector128(&left.M11), valueX), 
+                    Sse.Multiply(Sse.LoadVector128(&left.M12), valueY)),
+                    Sse.Multiply(Sse.LoadVector128(&left.M13), valueZ)),
+                    Sse.Multiply(Sse.LoadVector128(&left.M14), valueW)));
+                return result;
+            }
+            
+            var resultX = left.M11 * vector.X + left.M12 * vector.Y + left.M13 * vector.Z + left.M14 * vector.W;
+            var resultY = left.M21 * vector.X + left.M22 * vector.Y + left.M23 * vector.Z + left.M24 * vector.W;
+            var resultZ = left.M31 * vector.X + left.M32 * vector.Y + left.M33 * vector.Z + left.M34 * vector.W;
+            var resultW = left.M41 * vector.X + left.M42 * vector.Y + left.M43 * vector.Z + left.M44 * vector.W;
             return new Float4(resultX, resultY, resultZ, resultW);
         }
-
-        public static bool operator ==(Matrix left, Matrix right)
+        
+        
+        public static unsafe Matrix operator *(Matrix value1, float value2)
         {
-            // Returns false in the presence of NaN values.
+            if (AdvSimd.IsSupported)
+            {
+                var value2Vec = Vector128.Create(value2);
+                AdvSimd.Store(&value1.M11, AdvSimd.Multiply(AdvSimd.LoadVector128(&value1.M11), value2Vec));
+                AdvSimd.Store(&value1.M12, AdvSimd.Multiply(AdvSimd.LoadVector128(&value1.M12), value2Vec));
+                AdvSimd.Store(&value1.M13, AdvSimd.Multiply(AdvSimd.LoadVector128(&value1.M13), value2Vec));
+                AdvSimd.Store(&value1.M14, AdvSimd.Multiply(AdvSimd.LoadVector128(&value1.M14), value2Vec));
+                return value1;
+            }
+
+            if (Sse.IsSupported)
+            {
+                var value2Vec = Vector128.Create(value2);
+                Sse.Store(&value1.M11, Sse.Multiply(Sse.LoadVector128(&value1.M11), value2Vec));
+                Sse.Store(&value1.M12, Sse.Multiply(Sse.LoadVector128(&value1.M12), value2Vec));
+                Sse.Store(&value1.M13, Sse.Multiply(Sse.LoadVector128(&value1.M13), value2Vec));
+                Sse.Store(&value1.M14, Sse.Multiply(Sse.LoadVector128(&value1.M14), value2Vec));
+                return value1;
+            }
+
+            Matrix m;
+ 
+            m.M11 = value1.M11 * value2;
+            m.M12 = value1.M12 * value2;
+            m.M13 = value1.M13 * value2;
+            m.M14 = value1.M14 * value2;
+            m.M21 = value1.M21 * value2;
+            m.M22 = value1.M22 * value2;
+            m.M23 = value1.M23 * value2;
+            m.M24 = value1.M24 * value2;
+            m.M31 = value1.M31 * value2;
+            m.M32 = value1.M32 * value2;
+            m.M33 = value1.M33 * value2;
+            m.M34 = value1.M34 * value2;
+            m.M41 = value1.M41 * value2;
+            m.M42 = value1.M42 * value2;
+            m.M43 = value1.M43 * value2;
+            m.M44 = value1.M44 * value2;
+            return m;
+        }
+
+        public static unsafe bool operator ==(Matrix left, Matrix right)
+        {
+            if (AdvSimd.Arm64.IsSupported)
+            {
+                return SimdExtensions.Equal(AdvSimd.LoadVector128(&left.M11), AdvSimd.LoadVector128(&right.M11)) &&
+                       SimdExtensions.Equal(AdvSimd.LoadVector128(&left.M12), AdvSimd.LoadVector128(&right.M12)) &&
+                       SimdExtensions.Equal(AdvSimd.LoadVector128(&left.M13), AdvSimd.LoadVector128(&right.M13)) &&
+                       SimdExtensions.Equal(AdvSimd.LoadVector128(&left.M14), AdvSimd.LoadVector128(&right.M14));
+            }
+
+            if (Sse.IsSupported)
+            {
+                return SimdExtensions.Equal(Sse.LoadVector128(&left.M11), Sse.LoadVector128(&right.M11)) &&
+                       SimdExtensions.Equal(Sse.LoadVector128(&left.M12), Sse.LoadVector128(&right.M12)) &&
+                       SimdExtensions.Equal(Sse.LoadVector128(&left.M13), Sse.LoadVector128(&right.M13)) &&
+                       SimdExtensions.Equal(Sse.LoadVector128(&left.M14), Sse.LoadVector128(&right.M14));
+            }
+
+            // return left.M11 == right.M11 && left.M22 == right.M22 && left.M33 == right.M33 && left.M44 == right.M44 && // Check diagonal element first for early out.
+            //        left.M12 == right.M12 && left.M13 == right.M13 && left.M14 == right.M14 && left.M21 == right.M21 &&
+            //        left.M23 == right.M23 && left.M24 == right.M24 && left.M31 == right.M31 && left.M32 == right.M32 &&
+            //        left.M34 == right.M34 && left.M41 == right.M41 && left.M42 == right.M42 && left.M43 == right.M43;
+            // // Returns false in the presence of NaN values.
             return left.GetColumn(0) == right.GetColumn(0)
                    && left.GetColumn(1) == right.GetColumn(1)
                    && left.GetColumn(2) == right.GetColumn(2)
@@ -283,8 +469,25 @@ namespace Daeira
         }
 
         //*undoc*
-        public static bool operator !=(Matrix left, Matrix right)
+        public static unsafe bool operator !=(Matrix left, Matrix right)
         {
+            if (AdvSimd.Arm64.IsSupported)
+            {
+                return SimdExtensions.NotEqual(AdvSimd.LoadVector128(&left.M11), AdvSimd.LoadVector128(&right.M11)) ||
+                       SimdExtensions.NotEqual(AdvSimd.LoadVector128(&left.M12), AdvSimd.LoadVector128(&right.M12)) ||
+                       SimdExtensions.NotEqual(AdvSimd.LoadVector128(&left.M13), AdvSimd.LoadVector128(&right.M13)) ||
+                       SimdExtensions.NotEqual(AdvSimd.LoadVector128(&left.M14), AdvSimd.LoadVector128(&right.M14));
+            }
+
+            if (Sse.IsSupported)
+            {
+                return
+                    SimdExtensions.NotEqual(Sse.LoadVector128(&left.M11), Sse.LoadVector128(&right.M11)) ||
+                    SimdExtensions.NotEqual(Sse.LoadVector128(&left.M12), Sse.LoadVector128(&right.M12)) ||
+                    SimdExtensions.NotEqual(Sse.LoadVector128(&left.M13), Sse.LoadVector128(&right.M13)) ||
+                    SimdExtensions.NotEqual(Sse.LoadVector128(&left.M14), Sse.LoadVector128(&right.M14));
+            }
+
             // Returns true in the presence of NaN values.
             return !(left == right);
         }
@@ -445,8 +648,53 @@ namespace Daeira
         /// <summary>Transposes the rows and columns of a matrix.</summary>
         /// <param name="matrix">The source matrix.</param>
         /// <returns>The transposed matrix.</returns>
-        public static Matrix Transpose(Matrix matrix)
+        public static unsafe Matrix Transpose(Matrix matrix)
         {
+            if (AdvSimd.Arm64.IsSupported)
+            {
+                // This implementation is based on the DirectX Math Library XMMatrixTranspose method
+                // https://github.com/microsoft/DirectXMath/blob/master/Inc/DirectXMathMatrix.inl
+
+                var m11 = AdvSimd.LoadVector128(&matrix.M11);
+                var m13 = AdvSimd.LoadVector128(&matrix.M13);
+
+                var p00 = AdvSimd.Arm64.ZipLow(m11, m13);
+                var p01 = AdvSimd.Arm64.ZipHigh(m11, m13);
+
+                var m12 = AdvSimd.LoadVector128(&matrix.M12);
+                var m14 = AdvSimd.LoadVector128(&matrix.M14);
+
+                var p10 = AdvSimd.Arm64.ZipLow(m12, m14);
+                var p11 = AdvSimd.Arm64.ZipHigh(m12, m14);
+
+                AdvSimd.Store(&matrix.M11, AdvSimd.Arm64.ZipLow(p00, p10));
+                AdvSimd.Store(&matrix.M12, AdvSimd.Arm64.ZipHigh(p00, p10));
+                AdvSimd.Store(&matrix.M13, AdvSimd.Arm64.ZipLow(p01, p11));
+                AdvSimd.Store(&matrix.M14, AdvSimd.Arm64.ZipHigh(p01, p11));
+
+                return matrix;
+            }
+
+            if (Sse.IsSupported)
+            {
+                var row1 = Sse.LoadVector128(&matrix.M11);
+                var row2 = Sse.LoadVector128(&matrix.M12);
+                var row3 = Sse.LoadVector128(&matrix.M13);
+                var row4 = Sse.LoadVector128(&matrix.M14);
+
+                var l12 = Sse.UnpackLow(row1, row2);
+                var l34 = Sse.UnpackLow(row3, row4);
+                var h12 = Sse.UnpackHigh(row1, row2);
+                var h34 = Sse.UnpackHigh(row3, row4);
+
+                Sse.Store(&matrix.M11, Sse.MoveLowToHigh(l12, l34));
+                Sse.Store(&matrix.M12, Sse.MoveHighToLow(l34, l12));
+                Sse.Store(&matrix.M13, Sse.MoveLowToHigh(h12, h34));
+                Sse.Store(&matrix.M14, Sse.MoveHighToLow(h34, h12));
+
+                return matrix;
+            }
+
             Matrix result;
 
             result.M11 = matrix.M11;
