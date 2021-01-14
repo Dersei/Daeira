@@ -40,19 +40,19 @@ namespace Daeira.Benchmark
             //
             // var fc = new FloatColor();
             
-            var f1 = new Float4(1.5f, 1f, 4.5f, 6.7f);
-            var f2 = new Float4(16.9f, 123f, 134.5f, 1096.9f);
+            var f1 = new Float4(0.5f, -1f, 4.5f, 6.7f);
+            var f2 = new Float4(16.9f, 123f, 134.5f, 1096.9f).Normalize();
             Console.WriteLine(f1.Dot(f2));
-            var f3 = new Float4Sse(1.5f, 1f, 4.5f, 6.7f).NormalizeExact();
+            var f3 = new Float4Sse(0.5f, -1f, 4.5f, 6.7f);
             var f4 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f).NormalizeExact();
-            Console.WriteLine(f3.Length);
-            Console.WriteLine(f4.Length);
+            Console.WriteLine(Float4.Saturate(f1));
+            Console.WriteLine(Float4Sse.Saturate(f3));
             Float4Sse fs = new Float4Sse(2,3,6,7);
             Float4Sse f1s = new Float4Sse(1.5f, 1.3f, 2,3);
             Console.WriteLine(fs+f1s);
             Console.WriteLine(fs.Dot(f1s));
             Console.WriteLine(f2.Dot(f1));
-            return;
+          //  return;
             BenchmarkRunner.Run<ActualBenchmark>(ManualConfig
                 .Create(DefaultConfig.Instance)
                 .AddColumn(TargetMethodColumn.Method)
@@ -64,7 +64,7 @@ namespace Daeira.Benchmark
                 .AddColumn(RankColumn.Arabic)
                 .AddExporter(CsvExporter.Default)
                 .AddExporter(CsvMeasurementsExporter.Default)
-                .AddExporter(RPlotExporter.Default)
+                //.AddExporter(RPlotExporter.Default)
                 .AddLogger(ConsoleLogger.Default)
                 .AddDiagnoser(MemoryDiagnoser.Default));
         }

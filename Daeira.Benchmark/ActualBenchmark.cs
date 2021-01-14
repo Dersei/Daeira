@@ -49,57 +49,81 @@ namespace Daeira.Benchmark
         //
         //     return result;
         // }
+        //
+        // [Benchmark]
+        // public float Length()
+        // {
+        //     Float4 f = new Float4();
+        //     Float4 f1 = new Float4(1, 1, 2,3);
+        //     var result = 0f;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += f1.LengthSquared;
+        //         //   f1 *= 2;
+        //     }
+        //     
+        //     return result;
+        // }
+        //
+        // [Benchmark]
+        // public float LengthSse()
+        // {
+        //     Float4Sse f = new Float4Sse();
+        //     Float4Sse f1 = new Float4Sse(1, 1, 2,3);
+        //     var result = 0f;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += f1.LengthSquared;
+        //         //  f1 *= 2;
+        //     }
+        //
+        //     return result;
+        // }
+        //
+        //
+        // [Benchmark]
+        // public Float4 Create()
+        // {
+        //     var result = Float4.Zero;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result = new Float4(i,i,i,i);
+        //     }
+        //     
+        //     return result;
+        // }
+        //
+        // [Benchmark]
+        // public Float4Sse CreateSse()
+        // {
+        //     var result = Float4Sse.Zero;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result = new Float4Sse(i,i,i,i);
+        //     }
+        //     
+        //     return result;
+        // }
         
         [Benchmark]
-        public float Length()
-        {
-            Float4 f = new Float4();
-            Float4 f1 = new Float4(1, 1, 2,3);
-            var result = 0f;
-            for (var i = 0; i < 1000; i++)
-            {
-                result += f1.LengthSquared;
-                //   f1 *= 2;
-            }
-            
-            return result;
-        }
-        
-        [Benchmark]
-        public float LengthSse()
-        {
-            Float4Sse f = new Float4Sse();
-            Float4Sse f1 = new Float4Sse(1, 1, 2,3);
-            var result = 0f;
-            for (var i = 0; i < 1000; i++)
-            {
-                result += f1.LengthSquared;
-                //  f1 *= 2;
-            }
-        
-            return result;
-        }
-        
-        
-        [Benchmark]
-        public Float4 Create()
-        {
-            var result = Float4.Zero;
-            for (var i = 0; i < 1000; i++)
-            {
-                result = new Float4(i,i,i,i);
-            }
-            
-            return result;
-        }
-        
-        [Benchmark]
-        public Float4Sse CreateSse()
+        public Float4Sse Normalize()
         {
             var result = Float4Sse.Zero;
             for (var i = 0; i < 1000; i++)
             {
-                result = new Float4Sse(i,i,i,i);
+                result += new Float4Sse(i,i,i,i).NormalizeExact() * Float4Sse.UnitX;
+            }
+            
+            return result;
+        }
+        
+        [Benchmark]
+        public Float4Sse NormalizeRef()
+        {
+            var result = Float4Sse.Zero;
+            for (var i = 0; i < 1000; i++)
+            {
+                result += new Float4Sse(i,i,i,i).NormalizeExactRef() * Float4Sse.UnitX;
             }
             
             return result;

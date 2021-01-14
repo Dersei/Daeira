@@ -213,6 +213,20 @@ namespace Daeira
             return b * (Dot(a, b) / Dot(b, b));
         }
 
+        public static Float4 Reflect(Float4 vector, Float4 normal)
+        {
+            return -2 * Dot(vector, normal) * normal + vector;
+        }
+
+        public static Float4 Saturate(Float4 vector)
+        {
+            return new(
+                MathExtensions.Clamp01(vector.X), 
+                MathExtensions.Clamp01(vector.Y),
+                MathExtensions.Clamp01(vector.Z), 
+                MathExtensions.Clamp01(vector.W));
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Float4 Lerp(Float4 v, float t)
         {

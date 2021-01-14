@@ -197,8 +197,14 @@ namespace Daeira
             //
             // return Zero;
         }
-        
+
         public Float4Sse NormalizeExact()
+        {
+            return new(Sse.Divide(Vector, Sse.Sqrt(Sse41.DotProduct(Vector, Vector, 0b11111111))));
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float4Sse NormalizeExactRef()
         {
             return new(Sse.Divide(Vector, Sse.Sqrt(Sse41.DotProduct(Vector, Vector, 0b11111111))));
         }
@@ -223,14 +229,15 @@ namespace Daeira
 
         public static Float4Sse Project(Float4Sse a, Float4Sse b)
         {
-            return new(Sse.Multiply(b.Vector, Sse.Divide(Sse41.DotProduct(a.Vector, b.Vector, 255), Sse41.DotProduct(a.Vector, b.Vector, 255))));
+            return new(Sse.Multiply(b.Vector,
+                Sse.Divide(Sse41.DotProduct(a.Vector, b.Vector, 255), Sse41.DotProduct(a.Vector, b.Vector, 255))));
             //return b * (Dot(a, b) / Dot(b, b));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Float4Sse Lerp(Float4Sse v, float t)
         {
-            return new (Sse.Add(Vector, Sse.Multiply(Sse.Subtract(v.Vector, Vector), Vector128.Create(t))));
+            return new(Sse.Add(Vector, Sse.Multiply(Sse.Subtract(v.Vector, Vector), Vector128.Create(t))));
         }
 
         public static Float4Sse Lerp(Float4Sse a, Float4Sse b, float t)
@@ -242,7 +249,7 @@ namespace Daeira
         // Linearly interpolates between two vectors without clamping the interpolant
         public static Float4Sse LerpUnclamped(Float4Sse a, Float4Sse b, float t)
         {
-            return new (
+            return new(
                 a.X + (b.X - a.X) * t,
                 a.Y + (b.Y - a.Y) * t,
                 a.Z + (b.Z - a.Z) * t,
@@ -265,7 +272,7 @@ namespace Daeira
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float4Sse SquareRoot(Float4Sse value)
         {
-            return new (Sse.Sqrt(value.Vector));
+            return new(Sse.Sqrt(value.Vector));
         }
 
         public static Float4Sse Abs(Float4Sse value)
@@ -291,13 +298,28 @@ namespace Daeira
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float4Sse Min(Float4Sse a, Float4Sse b)
         {
-            return new (Sse.Min(a.Vector, b.Vector));
+            return new(Sse.Min(a.Vector, b.Vector));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float4Sse Max(Float4Sse a, Float4Sse b)
         {
-            return new (Sse.Max(a.Vector, b.Vector));
+            return new(Sse.Max(a.Vector, b.Vector));
+        }
+
+        private static readonly Vector128<float> Vector2 = Vector128.Create(2f);
+        
+        public static Float4Sse Reflect(Float4Sse vector, Float4Sse normal)
+        {
+            return new(Sse.Subtract(vector.Vector,
+                Sse.Multiply(Vector2,
+                    Sse.Multiply(normal.Vector,
+                        Avx.Permute(Sse41.DotProduct(vector.Vector, normal.Vector, 0xff), 0)))));
+        }
+
+        public static Float4Sse Saturate(Float4Sse vector)
+        {
+            return new(Sse.Max(Sse.Min(vector.Vector, One.Vector), Vector128<float>.Zero));
         }
 
 
