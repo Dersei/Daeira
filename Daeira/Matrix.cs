@@ -14,10 +14,12 @@ namespace Daeira
         public float M21;
         public float M31;
         public float M41;
+
         /// <summary>
         /// First row, second column
         /// </summary>
         public float M12;
+
         public float M22;
         public float M32;
         public float M42;
@@ -357,7 +359,6 @@ namespace Daeira
 
         public static unsafe Float4 operator *(Matrix left, Float4 vector)
         {
-            
             if (AdvSimd.IsSupported)
             {
                 Unsafe.SkipInit(out Float4 result);
@@ -366,13 +367,13 @@ namespace Daeira
                 var valueZ = Vector128.Create(vector.Z);
                 var valueW = Vector128.Create(vector.W);
                 AdvSimd.Store(&result.X, AdvSimd.Add(Sse.Add(Sse.Add(
-                            AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M11), valueX), 
+                            AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M11), valueX),
                             AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M12), valueY)),
                         AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M13), valueZ)),
                     AdvSimd.Multiply(AdvSimd.LoadVector128(&left.M14), valueW)));
                 return result;
             }
-            
+
             if (Sse.IsSupported)
             {
                 Unsafe.SkipInit(out Float4 result);
@@ -381,21 +382,21 @@ namespace Daeira
                 var valueZ = Vector128.Create(vector.Z);
                 var valueW = Vector128.Create(vector.W);
                 Sse.Store(&result.X, Sse.Add(Sse.Add(Sse.Add(
-                    Sse.Multiply(Sse.LoadVector128(&left.M11), valueX), 
-                    Sse.Multiply(Sse.LoadVector128(&left.M12), valueY)),
-                    Sse.Multiply(Sse.LoadVector128(&left.M13), valueZ)),
+                            Sse.Multiply(Sse.LoadVector128(&left.M11), valueX),
+                            Sse.Multiply(Sse.LoadVector128(&left.M12), valueY)),
+                        Sse.Multiply(Sse.LoadVector128(&left.M13), valueZ)),
                     Sse.Multiply(Sse.LoadVector128(&left.M14), valueW)));
                 return result;
             }
-            
+
             var resultX = left.M11 * vector.X + left.M12 * vector.Y + left.M13 * vector.Z + left.M14 * vector.W;
             var resultY = left.M21 * vector.X + left.M22 * vector.Y + left.M23 * vector.Z + left.M24 * vector.W;
             var resultZ = left.M31 * vector.X + left.M32 * vector.Y + left.M33 * vector.Z + left.M34 * vector.W;
             var resultW = left.M41 * vector.X + left.M42 * vector.Y + left.M43 * vector.Z + left.M44 * vector.W;
             return new Float4(resultX, resultY, resultZ, resultW);
         }
-        
-        
+
+
         public static unsafe Matrix operator *(Matrix value1, float value2)
         {
             if (AdvSimd.IsSupported)
@@ -419,7 +420,7 @@ namespace Daeira
             }
 
             Matrix m;
- 
+
             m.M11 = value1.M11 * value2;
             m.M12 = value1.M12 * value2;
             m.M13 = value1.M13 * value2;
@@ -514,12 +515,57 @@ namespace Daeira
             return new Float3(resultX, resultY, resultZ);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Float3 MultiplyVector(Float3 vector)
         {
             var resultX = M11 * vector.X + M12 * vector.Y + M13 * vector.Z;
             var resultY = M21 * vector.X + M22 * vector.Y + M23 * vector.Z;
             var resultZ = M31 * vector.X + M32 * vector.Y + M33 * vector.Z;
             return new Float3(resultX, resultY, resultZ);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float3 MultiplyVector(Matrix matrix, Float3 vector)
+        {
+            var resultX = matrix.M11 * vector.X + matrix.M12 * vector.Y + matrix.M13 * vector.Z;
+            var resultY = matrix.M21 * vector.X + matrix.M22 * vector.Y + matrix.M23 * vector.Z;
+            var resultZ = matrix.M31 * vector.X + matrix.M32 * vector.Y + matrix.M33 * vector.Z;
+            return new Float3(resultX, resultY, resultZ);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float3Sse MultiplyVector(Float3Sse vector)
+        {
+            var resultX = M11 * vector.X + M12 * vector.Y + M13 * vector.Z;
+            var resultY = M21 * vector.X + M22 * vector.Y + M23 * vector.Z;
+            var resultZ = M31 * vector.X + M32 * vector.Y + M33 * vector.Z;
+            return new Float3Sse(resultX, resultY, resultZ);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Float3Sse MultiplyVector(Matrix matrix, Float3Sse vector)
+        {
+            // if (Sse.IsSupported)
+            // {
+            //     var dpx = Sse41.DotProduct(Sse.LoadAlignedVector128(&matrix.M11), vector.Vector, 0x7f);
+            //     var dpy = Sse41.DotProduct(Sse.LoadAlignedVector128(&matrix.M12), vector.Vector, 0x7f);
+            //     var dpz = Sse41.DotProduct(Sse.LoadAlignedVector128(&matrix.M13), vector.Vector, 0x7f);
+            //     return new Float3Sse(Sse41.Blend(dpx, Sse.Shuffle(dpy, dpz, 0), 0b110));
+            // }
+
+
+            if (Sse.IsSupported)
+            {
+                return new Float3Sse(Sse.Add(Sse.Add(
+                        Sse.Multiply(Sse.LoadAlignedVector128(&matrix.M11), Vector128.Create(*(float*) &vector.Vector)),
+                        Sse.Multiply(Sse.LoadAlignedVector128(&matrix.M12), Vector128.Create(*((float*) &vector.Vector + 1)))),
+                    Sse.Multiply(Sse.LoadAlignedVector128(&matrix.M13), Vector128.Create(*((float*) &vector.Vector + 2)))));
+            }
+
+            var resultX = matrix.M11 * vector.X + matrix.M12 * vector.Y + matrix.M13 * vector.Z;
+            var resultY = matrix.M21 * vector.X + matrix.M22 * vector.Y + matrix.M23 * vector.Z;
+            var resultZ = matrix.M31 * vector.X + matrix.M32 * vector.Y + matrix.M33 * vector.Z;
+            return new Float3Sse(resultX, resultY, resultZ);
         }
 
         public static Matrix Rotate(float angle, Float3 axis)

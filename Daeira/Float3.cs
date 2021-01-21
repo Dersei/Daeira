@@ -23,7 +23,7 @@ namespace Daeira
         {
         }
 
-        public Float3(Float2 vector, float z) : this(vector.X, vector.Y, z)
+        public Float3(in Float2 vector, float z) : this(vector.X, vector.Y, z)
         {
         }
 
@@ -35,27 +35,27 @@ namespace Daeira
             _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
 
-        public static readonly Float3 Zero = new Float3(0, 0, 0);
-        public static readonly Float3 One = new Float3(1, 1, 1);
-        public static readonly Float3 Up = new Float3(0f, 1f, 0);
-        public static readonly Float3 Down = new Float3(0f, -1f, 0);
-        public static readonly Float3 Left = new Float3(-1f, 0, 0);
-        public static readonly Float3 Right = new Float3(1f, 0, 0);
-        public static readonly Float3 Forward = new Float3(0f, 0f, 1f);
-        public static readonly Float3 Back = new Float3(0f, 0f, -1f);
-        public static readonly Float3 UnitX = new Float3(1f, 0f, 0f);
-        public static readonly Float3 UnitY = new Float3(0f, 1f, 0f);
-        public static readonly Float3 UnitZ = new Float3(0f, 0f, 1f);
-        
+        public static readonly Float3 Zero = new(0, 0, 0);
+        public static readonly Float3 One = new(1, 1, 1);
+        public static readonly Float3 Up = new(0f, 1f, 0);
+        public static readonly Float3 Down = new(0f, -1f, 0);
+        public static readonly Float3 Left = new(-1f, 0, 0);
+        public static readonly Float3 Right = new(1f, 0, 0);
+        public static readonly Float3 Forward = new(0f, 0f, 1f);
+        public static readonly Float3 Back = new(0f, 0f, -1f);
+        public static readonly Float3 UnitX = new(1f, 0f, 0f);
+        public static readonly Float3 UnitY = new(0f, 1f, 0f);
+        public static readonly Float3 UnitZ = new(0f, 0f, 1f);
+
         private const float Epsilon = 0.00001f;
         private const float DoubledEpsilon = Epsilon * Epsilon;
         private const float EpsilonNormalSqrt = 1e-15f;
 
         public static readonly Float3 PositiveInfinity =
-            new Float3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+            new(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
 
         public static readonly Float3 NegativeInfinity =
-            new Float3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
+            new(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
 
         public float Length => MathF.Sqrt(X * X + Y * Y + Z * Z);
 
@@ -64,64 +64,64 @@ namespace Daeira
         #region Operators
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator +(Float3 v1, Float3 v2)
+        public static Float3 operator +(in Float3 v1, in Float3 v2)
         {
-            return new Float3(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z);
+            return new(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator -(Float3 v1, Float3 v2)
+        public static Float3 operator -(in Float3 v1, in Float3 v2)
         {
-            return new Float3(v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z);
+            return new(v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator *(Float3 v1, Float3 v2)
+        public static Float3 operator *(in Float3 v1, in Float3 v2)
         {
-            return new Float3(v1.X * v2.X, v1.Y * v2.Y, v1.Z * v2.Z);
+            return new(v1.X * v2.X, v1.Y * v2.Y, v1.Z * v2.Z);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator *(Float3 v, float scalar)
+        public static Float3 operator *(in Float3 v, float scalar)
         {
-            return new Float3(v.X * scalar, v.Y * scalar, v.Z * scalar);
+            return new(v.X * scalar, v.Y * scalar, v.Z * scalar);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator *(float scalar, Float3 v)
+        public static Float3 operator *(float scalar, in Float3 v)
         {
-            return new Float3(v.X * scalar, v.Y * scalar, v.Z * scalar);
+            return new(v.X * scalar, v.Y * scalar, v.Z * scalar);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator /(Float3 v, float scalar)
+        public static Float3 operator /(in Float3 v, float scalar)
         {
             var inverse = 1f / scalar;
             return new Float3(v.X * inverse, v.Y * inverse, v.Z * inverse);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator /(float scalar, Float3 v)
+        public static Float3 operator /(float scalar, in Float3 v)
         {
-            return new Float3(scalar / v.X, scalar / v.Y, scalar / v.Z);
+            return new(scalar / v.X, scalar / v.Y, scalar / v.Z);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 operator -(Float3 v)
+        public static Float3 operator -(in Float3 v)
         {
-            return new Float3(-v.X, -v.Y, -v.Z);
+            return new(-v.X, -v.Y, -v.Z);
         }
 
         #endregion
 
         #region Equality
 
-        public static bool operator ==(Float3 left, Float3 right)
+        public static bool operator ==(in Float3 left, in Float3 right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Float3 left, Float3 right)
+        public static bool operator !=(in Float3 left, in Float3 right)
         {
             return !left.Equals(right);
         }
@@ -135,12 +135,12 @@ namespace Daeira
             return sqrMag < DoubledEpsilon;
         }
 
-        public static bool Equals(Float3 left, Float3 right)
+        public static bool Equals(in Float3 left, in Float3 right)
         {
             return left == right;
         }
 
-        public static bool FloatEquals(Float3 left, Float3 right)
+        public static bool FloatEquals(in Float3 left, in Float3 right)
         {
             return left.X == right.X && left.Y == right.Y && left.Z == right.Z;
         }
@@ -154,8 +154,9 @@ namespace Daeira
         {
             return HashCode.Combine(X, Y, Z);
         }
-        
+
         #endregion
+
         #region ToString
 
         public string ToString(string? format, IFormatProvider? formatProvider)
@@ -163,7 +164,7 @@ namespace Daeira
             return
                 $"({X.ToString(format, formatProvider)}, {Y.ToString(format, formatProvider)}, {Z.ToString(format, formatProvider)})";
         }
-        
+
         public string ToString(string? format)
         {
             return ToString(format, CultureInfo.CurrentCulture);
@@ -186,78 +187,90 @@ namespace Daeira
 
             return Zero;
         }
-        
-        public static Float3 Normalize(Float3 v)
+
+        public static Float3 Normalize(in Float3 v)
         {
             return v.Normalize();
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float Dot(Float3 v)
+        public Float3 NormalizeUnsafe() => this / Length;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float Dot(in Float3 v)
         {
             return X * v.X + Y * v.Y + Z * v.Z;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Dot(Float3 v1, Float3 v2)
+        public static float Dot(in Float3 v1, in Float3 v2)
         {
             return v1.X * v2.X + v1.Y * v2.Y + v1.Z * v2.Z;
         }
 
-        public Float3 Cross(Float3 v)
+        public Float3 Cross(in Float3 v)
         {
-            return new Float3(Y * v.Z - Z * v.Y, Z * v.X - X * v.Z, X * v.Y - Y * v.X);
+            return new(Y * v.Z - Z * v.Y, Z * v.X - X * v.Z, X * v.Y - Y * v.X);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Float3 Reflect(Float3 normal)
+        public Float3 Reflect(in Float3 normal)
         {
             return -2 * Dot(this, normal) * normal + this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 Reflect(Float3 vector, Float3 normal)
+        public static Float3 Reflect(in Float3 vector, in Float3 normal)
         {
             return -2 * Dot(vector, normal) * normal + vector;
         }
 
-        public static Float3 Project(Float3 vector, Float3 onNormal)
+        public static Float3 Project(in Float3 vector, in Float3 onNormal)
         {
             float sqrMag = Dot(onNormal, onNormal);
             if (sqrMag < Epsilon)
-                return Zero;
-            else
             {
-                var dot = Dot(vector, onNormal);
-                return new Float3(onNormal.X * dot / sqrMag,
-                    onNormal.Y * dot / sqrMag,
-                    onNormal.Z * dot / sqrMag);
+                return Zero;
             }
+
+            var dot = Dot(vector, onNormal);
+            return new Float3(onNormal.X * dot / sqrMag,
+                onNormal.Y * dot / sqrMag,
+                onNormal.Z * dot / sqrMag);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Float3 Lerp(Float3 vector, float t)
+        public static Float3 Saturate(in Float3 vector)
         {
-            return new Float3(X + t * (vector.X - X), Y + t * (vector.Y - Y), Z + t * (vector.Z - Z));
+            return new(
+                MathExtensions.Clamp01(vector.X),
+                MathExtensions.Clamp01(vector.Y),
+                MathExtensions.Clamp01(vector.Z));
         }
-        
-        public static Float3 Lerp(Float3 v1, Float3 v2, float t)
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float3 Lerp(in Float3 vector, float t)
+        {
+            return new(X + t * (vector.X - X), Y + t * (vector.Y - Y), Z + t * (vector.Z - Z));
+        }
+
+        public static Float3 Lerp(in Float3 v1, in Float3 v2, float t)
         {
             t = MathExtensions.Clamp01(t);
             return LerpUnclamped(v1, v2, t);
         }
 
         // Linearly interpolates between two vectors without clamping the interpolant
-        public static Float3 LerpUnclamped(Float3 v1, Float3 v2, float t)
+        public static Float3 LerpUnclamped(in Float3 v1, in Float3 v2, float t)
         {
-            return new Float3(
+            return new(
                 v1.X + (v2.X - v1.X) * t,
                 v1.Y + (v2.Y - v1.Y) * t,
                 v1.Z + (v2.Z - v1.Z) * t
             );
         }
 
-        public static float Angle(Float3 from, Float3 to)
+        public static float Angle(in Float3 from, in Float3 to)
         {
             // sqrt(a) * sqrt(b) = sqrt(a * b) -- valid for real numbers
             var denominator = MathF.Sqrt(@from.LengthSquared * to.LengthSquared);
@@ -269,8 +282,8 @@ namespace Daeira
             var dot = MathExtensions.Clamp(Dot(from, to) / denominator, -1f, 1f);
             return MathF.Acos(dot) * MathExtensions.Rad2Deg;
         }
-        
-        public static float SignedAngle(Float3 from, Float3 to, Float3 axis)
+
+        public static float SignedAngle(in Float3 from, in Float3 to, in Float3 axis)
         {
             var unsignedAngle = Angle(from, to);
 
@@ -281,7 +294,7 @@ namespace Daeira
             return unsignedAngle * sign;
         }
 
-        public static float Distance(Float3 v1, Float3 v2)
+        public static float Distance(in Float3 v1, in Float3 v2)
         {
             var diffX = v1.X - v2.X;
             var diffY = v1.Y - v2.Y;
@@ -289,7 +302,7 @@ namespace Daeira
             return MathF.Sqrt(diffX * diffX + diffY * diffY + diffZ * diffZ);
         }
 
-        public static float DistanceSquared(Float3 v1, Float3 v2)
+        public static float DistanceSquared(in Float3 v1, in Float3 v2)
         {
             var diffX = v1.X - v2.X;
             var diffY = v1.Y - v2.Y;
@@ -297,19 +310,18 @@ namespace Daeira
             return diffX * diffX + diffY * diffY + diffZ * diffZ;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 SquareRoot(Float3 vector)
+        public static Float3 SquareRoot(in Float3 vector)
         {
-            return new Float3(
+            return new(
                 MathF.Sqrt(vector.X),
                 MathF.Sqrt(vector.Y),
                 MathF.Sqrt(vector.Z)
             );
         }
-        
-        public static Float3 Abs(Float3 vector)
+
+        public static Float3 Abs(in Float3 vector)
         {
-            return new Float3(
+            return new(
                 MathF.Abs(vector.X),
                 MathF.Abs(vector.Y),
                 MathF.Abs(vector.Z)
@@ -318,39 +330,37 @@ namespace Daeira
 
         public Vector3 ToBuiltIn()
         {
-            return new Vector3(X, Y, Z);
+            return new(X, Y, Z);
         }
 
         public static Float3 FromBuiltIn(Vector3 vector3)
         {
-            return new Float3(vector3.X, vector3.Y, vector3.Z);
+            return new(vector3.X, vector3.Y, vector3.Z);
         }
 
-        public static Float3 Transform(Float3 vector, float scale, Float3 position, Float3 rotationAxis,
+        public static Float3 Transform(in Float3 vector, float scale, in Float3 position, in Float3 rotationAxis,
             float angle)
         {
-            var matrixScale = System.Numerics.Matrix4x4.CreateScale(scale);
-            var matrixPosition = System.Numerics.Matrix4x4.CreateTranslation(position.ToBuiltIn());
+            var matrixScale = Matrix4x4.CreateScale(scale);
+            var matrixPosition = Matrix4x4.CreateTranslation(position.ToBuiltIn());
             var matrixRotation =
-                System.Numerics.Matrix4x4.CreateFromAxisAngle(rotationAxis.ToBuiltIn(), angle * MathExtensions.Deg2Rad);
+                Matrix4x4.CreateFromAxisAngle(rotationAxis.ToBuiltIn(), angle * MathExtensions.Deg2Rad);
             var transformMatrix = matrixScale * matrixRotation * matrixPosition;
             return FromBuiltIn(Vector3.Transform(vector.ToBuiltIn(), transformMatrix));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 Min(Float3 v1, Float3 v2)
+        public static Float3 Min(in Float3 v1, in Float3 v2)
         {
-            return new Float3(
+            return new(
                 v1.X < v2.X ? v1.X : v2.X,
                 v1.Y < v2.Y ? v1.Y : v2.Y,
                 v1.Z < v2.Z ? v1.Z : v2.Z
             );
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 Max(Float3 v1, Float3 v2)
+        public static Float3 Max(in Float3 v1, in Float3 v2)
         {
-            return new Float3(
+            return new(
                 v1.X > v2.X ? v1.X : v2.X,
                 v1.Y > v2.Y ? v1.Y : v2.Y,
                 v1.Z > v2.Z ? v1.Z : v2.Z
@@ -359,7 +369,7 @@ namespace Daeira
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Float3 Clamp(Float3 vector, Float3 min, Float3 max)
+        public static Float3 Clamp(in Float3 vector, in Float3 min, in Float3 max)
         {
             // We must follow HLSL behavior in the case user specified min value is bigger than max value.
             return Min(Max(vector, min), max);
@@ -389,11 +399,13 @@ namespace Daeira
             array[index + 1] = Y;
             array[index + 2] = Z;
         }
+        
+        public Float2 XY => new Float2(X, Y);
 
         public static implicit operator Float3((float x, float y, float z) values) =>
-            new Float3(values.x, values.y, values.z);
+            new(values.x, values.y, values.z);
 
-        public static implicit operator (float x, float y, float z)(Float3 v) => (v.X, v.Y, v.Z);
+        public static implicit operator (float x, float y, float z)(in Float3 v) => (v.X, v.Y, v.Z);
 
         public void Deconstruct(out float x, out float y, out float z) => (x, y, z) = (X, Y, Z);
     }

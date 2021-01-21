@@ -27,14 +27,16 @@ namespace Daeira
             _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
 
-        public static readonly Int2 Zero = new Int2(0, 0);
-        public static readonly Int2 One = new Int2(1, 1);
-        public static readonly Int2 UnitX = new Int2(1, 0 );
-        public static readonly Int2 UnitY = new Int2(0, 1);
-
-        public static readonly Int2 MaxValue = new Int2(int.MaxValue, int.MaxValue);
-
-        public static readonly Int2 MinValue = new Int2(int.MinValue, int.MinValue);
+        public static readonly Int2 Zero = new(0, 0);
+        public static readonly Int2 One = new(1, 1);
+        public static readonly Int2 UnitX = new(1, 0 );
+        public static readonly Int2 UnitY = new(0, 1);
+        public static readonly Int2 Up = new(0, 1);
+        public static readonly Int2 Down = new(0, -1);
+        public static readonly Int2 Left = new(-1, 0);
+        public static readonly Int2 Right = new(1, 0);
+        public static readonly Int2 MaxValue = new(int.MaxValue, int.MaxValue);
+        public static readonly Int2 MinValue = new(int.MinValue, int.MinValue);
 
         public float Length => MathF.Sqrt(X * X + Y * Y);
 
@@ -43,58 +45,58 @@ namespace Daeira
         #region Operators
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 operator +(Int2 v1, Int2 v2)
+        public static Int2 operator +(in Int2 v1, in Int2 v2)
         {
-            return new Int2(v1.X + v2.X, v1.Y + v2.Y);
+            return new(v1.X + v2.X, v1.Y + v2.Y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 operator -(Int2 v1, Int2 v2)
+        public static Int2 operator -(in Int2 v1, in Int2 v2)
         {
-            return new Int2(v1.X - v2.X, v1.Y - v2.Y);
+            return new(v1.X - v2.X, v1.Y - v2.Y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 operator *(Int2 v1, Int2 v2)
+        public static Int2 operator *(in Int2 v1, in Int2 v2)
         {
-            return new Int2(v1.X * v2.X, v1.Y * v2.Y);
+            return new(v1.X * v2.X, v1.Y * v2.Y);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 operator *(Int2 v, int scalar)
+        public static Int2 operator *(in Int2 v, int scalar)
         {
-            return new Int2(v.X * scalar, v.Y * scalar);
+            return new(v.X * scalar, v.Y * scalar);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 operator *(int scalar, Int2 v)
+        public static Int2 operator *(int scalar, in Int2 v)
         {
-            return new Int2(v.X * scalar, v.Y * scalar);
+            return new(v.X * scalar, v.Y * scalar);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 operator /(Int2 v, int scalar)
+        public static Int2 operator /(in Int2 v, int scalar)
         {
-            return new Int2(v.X / scalar, v.Y / scalar);
+            return new(v.X / scalar, v.Y / scalar);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 operator -(Int2 v)
+        public static Int2 operator -(in Int2 v)
         {
-            return new Int2(-v.X, -v.Y);
+            return new(-v.X, -v.Y);
         }
 
         #endregion
 
         #region Equality
 
-        public static bool operator ==(Int2 left, Int2 right)
+        public static bool operator ==(in Int2 left, in Int2 right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(Int2 left, Int2 right)
+        public static bool operator !=(in Int2 left, in Int2 right)
         {
             return !left.Equals(right);
         }
@@ -104,7 +106,7 @@ namespace Daeira
             return X == other.X && Y == other.Y;
         }
 
-        public static bool Equals(Int2 left, Int2 right)
+        public static bool Equals(in Int2 left, in Int2 right)
         {
             return left == right;
         }
@@ -143,34 +145,34 @@ namespace Daeira
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Dot(Int2 v)
+        public int Dot(in Int2 v)
         {
             return X * v.X + Y * v.Y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Dot(Int2 v1, Int2 v2)
+        public static int Dot(in Int2 v1, in Int2 v2)
         {
             return v1.X * v2.X + v1.Y * v2.Y;
         }
         
-        public static float Distance(Int2 v1, Int2 v2)
+        public static float Distance(in Int2 v1, in Int2 v2)
         {
             var diffX = v1.X - v2.X;
             var diffY = v1.Y - v2.Y;
             return MathF.Sqrt(diffX * diffX + diffY * diffY);
         }
 
-        public static float DistanceSquared(Int2 v1, Int2 v2)
+        public static float DistanceSquared(in Int2 v1, in Int2 v2)
         {
             var diffX = v1.X - v2.X;
             var diffY = v1.Y - v2.Y;
             return diffX * diffX + diffY * diffY;
         }
         
-        public static Int2 Abs(Int2 value)
+        public static Int2 Abs(in Int2 value)
         {
-            return new Int2(
+            return new(
                 Math.Abs(value.X),
                 Math.Abs(value.Y)
                 );
@@ -178,22 +180,20 @@ namespace Daeira
 
         public Vector2 ToBuiltIn()
         {
-            return new Vector2(X, Y);
+            return new(X, Y);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 Min(Int2 value1, Int2 value2)
+        public static Int2 Min(in Int2 value1, in Int2 value2)
         {
-            return new Int2(
+            return new(
                 value1.X < value2.X ? value1.X : value2.X,
                 value1.Y < value2.Y ? value1.Y : value2.Y
             );
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 Max(Int2 value1, Int2 value2)
+        public static Int2 Max(in Int2 value1, in Int2 value2)
         {
-            return new Int2(
+            return new(
                 value1.X > value2.X ? value1.X : value2.X,
                 value1.Y > value2.Y ? value1.Y : value2.Y
             );
@@ -201,10 +201,19 @@ namespace Daeira
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Int2 Clamp(Int2 value1, Int2 min, Int2 max)
+        public static Int2 Clamp(in Int2 value1, in Int2 min, in Int2 max)
         {
             // We must follow HLSL behavior in the case user specified min value is bigger than max value.
             return Min(Max(value1, min), max);
+        }
+        
+        public Int2 Clamp(in Int2 min, in Int2 max)
+        {
+            var x = Math.Max(min.X, X);
+            x = Math.Min(max.X, x);
+            var y = Math.Max(min.Y, Y);
+            y = Math.Min(max.Y, y);
+            return new Int2(x, y);
         }
 
 
@@ -232,9 +241,9 @@ namespace Daeira
         }
 
         public static implicit operator Int2((int x, int y) values) =>
-            new Int2(values.x, values.y);
+            new(values.x, values.y);
 
-        public static implicit operator (int x, int y)(Int2 v) => (v.X, v.Y);
+        public static implicit operator (int x, int y)(in Int2 v) => (v.X, v.Y);
 
         public void Deconstruct(out int x, out int y) => (x, y) = (X, Y);
     }

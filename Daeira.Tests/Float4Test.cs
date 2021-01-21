@@ -63,6 +63,23 @@ namespace Daeira.Tests
         }
         
         [Fact]
+        public void Reflect()
+        {
+            var f1 = new Float4(1.5f, 1f, 4.5f, 6.7f);
+            var f2 = new Float4(16.9f, 123f, 134.5f, 1096.9f);
+            var result = new Float4(-273874.16f, -1993295.2f, -2179656.8f, -17775984f);
+            Assert.Equal(result, Float4.Reflect(f1,f2));
+        }
+        
+        [Fact]
+        public void Saturate()
+        {
+            var f2 = new Float4(0.9f, -123f, 134.5f, 1096.9f);
+            var result = new Float4(0.9f, 0, 1, 1);
+            Assert.Equal(result, Float4.Saturate(f2));
+        }
+        
+        [Fact]
         public void Normalize()
         {
             var f1 = new Float4(1.5f, 1f, 4.5f, 6.7f).Normalize();

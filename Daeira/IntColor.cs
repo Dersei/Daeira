@@ -23,34 +23,34 @@ namespace Daeira
             A = a;
         }
         
-        public static readonly IntColor Black = new IntColor(0, 0, 0, 255);
-        public static readonly IntColor White = new IntColor(255, 255, 255, 255);
-        public static readonly IntColor Grey = new IntColor(128, 128, 128, 255);
-        public static readonly IntColor Red = new IntColor(255, 0, 0, 255);
-        public static readonly IntColor Blue = new IntColor(0, 0, 255, 255);
-        public static readonly IntColor Green = new IntColor(0, 255, 0, 255);
-        public static readonly IntColor Yellow = new IntColor(255, 255, 0, 255);
-        public static readonly IntColor UnityYellow = new IntColor(255, 235, 4, 255);
-        public static readonly IntColor Cyan = new IntColor(0, 255, 255, 255);
-        public static readonly IntColor Magenta = new IntColor(255, 0, 255, 255);
-        public static readonly IntColor Purple = new IntColor(255, 0, 255, 255);
-        public static readonly IntColor Error = new IntColor(255, 0, 144, 255);
-        public static readonly IntColor Clear = new IntColor(0, 0, 0, 0);
+        public static readonly IntColor Black = new(0, 0, 0, 255);
+        public static readonly IntColor White = new(255, 255, 255, 255);
+        public static readonly IntColor Grey = new(128, 128, 128, 255);
+        public static readonly IntColor Red = new(255, 0, 0, 255);
+        public static readonly IntColor Blue = new(0, 0, 255, 255);
+        public static readonly IntColor Green = new(0, 255, 0, 255);
+        public static readonly IntColor Yellow = new(255, 255, 0, 255);
+        public static readonly IntColor UnityYellow = new(255, 235, 4, 255);
+        public static readonly IntColor Cyan = new(0, 255, 255, 255);
+        public static readonly IntColor Magenta = new(255, 0, 255, 255);
+        public static readonly IntColor Purple = new(255, 0, 255, 255);
+        public static readonly IntColor Error = new(255, 0, 144, 255);
+        public static readonly IntColor Clear = new(0, 0, 0, 0);
 
-        public static implicit operator IntColor(FloatColor c)
+        public static implicit operator IntColor(in FloatColor c)
         {
-            return new IntColor((byte) MathF.Round(MathExtensions.Clamp01(c.R) * 255f),
+            return new((byte) MathF.Round(MathExtensions.Clamp01(c.R) * 255f),
                 (byte) MathF.Round(MathExtensions.Clamp01(c.G) * 255f),
                 (byte) MathF.Round(MathExtensions.Clamp01(c.B) * 255f),
                 (byte) MathF.Round(MathExtensions.Clamp01(c.A) * 255f));
         }
 
-        public static implicit operator FloatColor(IntColor c)
+        public static implicit operator FloatColor(in IntColor c)
         {
-            return new FloatColor(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);
+            return new(c.R / 255f, c.G / 255f, c.B / 255f, c.A / 255f);
         }
 
-        public static IntColor Lerp(IntColor a, IntColor b, float t)
+        public static IntColor Lerp(in IntColor a, in IntColor b, float t)
         {
             t = MathExtensions.Clamp01(t);
             return new IntColor(
@@ -61,9 +61,9 @@ namespace Daeira
             );
         }
 
-        public static IntColor LerpUnclamped(IntColor a, IntColor b, float t)
+        public static IntColor LerpUnclamped(in IntColor a, in IntColor b, float t)
         {
-            return new IntColor(
+            return new(
                 (byte) (a.R + (b.R - a.R) * t),
                 (byte) (a.G + (b.G - a.G) * t),
                 (byte) (a.B + (b.B - a.B) * t),
@@ -112,12 +112,12 @@ namespace Daeira
             return Rgba;
         }
 
-        public static bool operator ==(IntColor left, IntColor right)
+        public static bool operator ==(in IntColor left, in IntColor right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(IntColor left, IntColor right)
+        public static bool operator !=(in IntColor left, in IntColor right)
         {
             return !(left == right);
         }

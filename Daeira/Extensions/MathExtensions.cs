@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Daeira.Extensions
 {
@@ -61,6 +62,7 @@ namespace Daeira.Extensions
             return (byte) value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Clamp01(float value)
         {
             if (value <= 0F)

@@ -16,12 +16,12 @@ namespace Daeira.Benchmark
     {
         private static void Main()
         {
-            // var m = new Matrix(
-            //     1, 2, 3, 4,
-            //     5, 6, 7, 8,
-            //     9, 10, 11, 12,
-            //     13, 14, 15, 16
-            // );
+            var m = new Matrix(
+                1, 2, 3, 4,
+                5, 6, 7, 8,
+                9, 10, 11, 12,
+                13, 14, 15, 16
+            );
             //
             // var m4 = new Matrix4x4(
             //     1, 2, 3, 4,
@@ -40,20 +40,20 @@ namespace Daeira.Benchmark
             //
             // var fc = new FloatColor();
             
-            var f1 = new Float4(0.5f, -1f, 4.5f, 6.7f);
-            var f2 = new Float4(16.9f, 123f, 134.5f, 1096.9f).Normalize();
-            Console.WriteLine(f1.Dot(f2));
-            var f3 = new Float4Sse(0.5f, -1f, 4.5f, 6.7f);
-            var f4 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f).NormalizeExact();
-            Console.WriteLine(Float4.Saturate(f1));
-            Console.WriteLine(Float4Sse.Saturate(f3));
-            Float4Sse fs = new Float4Sse(2,3,6,7);
-            Float4Sse f1s = new Float4Sse(1.5f, 1.3f, 2,3);
-            Console.WriteLine(fs+f1s);
-            Console.WriteLine(fs.Dot(f1s));
-            Console.WriteLine(f2.Dot(f1));
+            var f1 = new Float3(0.5f, -1f, 4.5f);
+            var f2 = new Float3(16.9f, 123f, 134.5f);
+            var fs1 = new Float3Sse(0.5f, -1f, 4.5f);
+            var fs2 = new Float3Sse(16.9f, 123f, 134.5f);
+            // Console.WriteLine(f1 * f2);
+            // Console.WriteLine(f1.Dot(f2));
+            // Console.WriteLine(fs1 * fs2);
+            // Console.WriteLine(fs1.Dot(fs2));
+            Console.WriteLine(m.MultiplyVector(f1));
+            Console.WriteLine(m.MultiplyVector(fs1));
+            Console.WriteLine(Matrix.MultiplyVector(m,f1));
+            Console.WriteLine(Matrix.MultiplyVector(m,fs1));
           //  return;
-            BenchmarkRunner.Run<ActualBenchmark>(ManualConfig
+            BenchmarkRunner.Run<Float3Benchmark>(ManualConfig
                 .Create(DefaultConfig.Instance)
                 .AddColumn(TargetMethodColumn.Method)
                 .AddColumn(StatisticColumn.Mean)
@@ -64,7 +64,7 @@ namespace Daeira.Benchmark
                 .AddColumn(RankColumn.Arabic)
                 .AddExporter(CsvExporter.Default)
                 .AddExporter(CsvMeasurementsExporter.Default)
-                //.AddExporter(RPlotExporter.Default)
+                .AddExporter(RPlotExporter.Default)
                 .AddLogger(ConsoleLogger.Default)
                 .AddDiagnoser(MemoryDiagnoser.Default));
         }
