@@ -1,8 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics;
+﻿using System.Numerics;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
@@ -12,109 +8,197 @@ namespace Daeira.Benchmark
     [DisassemblyDiagnoser]
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     [CategoriesColumn]
-    [Orderer(SummaryOrderPolicy.Declared, MethodOrderPolicy.Declared)]
+    [Orderer(SummaryOrderPolicy.Declared)]
     public class Float3Benchmark
     {
         [Benchmark]
-        [BenchmarkCategory("Multiply")]
-        public Float3Sse Multiply()
+        [BenchmarkCategory("Normalize")]
+        public Float3 Normalize()
         {
-            Float3Sse f1 = new Float3Sse(1, 1, 2);
-            Matrix m = Matrix.Identity;
-            Float3Sse result = new Float3Sse();
+            var result = Float3.Zero;
             for (var i = 0; i < 1000; i++)
             {
-                result += m.MultiplyVector(f1);
+                result += Float3.Normalize(new Float3(i, i, i));
             }
 
             return result;
         }
 
         [Benchmark]
-        [BenchmarkCategory("Multiply")]
-        public Float3 MultiplyBase()
+        [BenchmarkCategory("Normalize")]
+        public Float3 NormalizeDot()
         {
-            Float3 f1 = new Float3(1, 1, 2);
-            Matrix m = Matrix.Identity;
-            Float3 result = new Float3();
+            var result = Float3.Zero;
             for (var i = 0; i < 1000; i++)
             {
-                result += m.MultiplyVector(f1);
+                result += Float3.NormalizeDot(new Float3(i, i, i));
             }
 
             return result;
         }
 
         [Benchmark]
-        [BenchmarkCategory("Multiply")]
-        public Float3Sse MultiplySse()
+        [BenchmarkCategory("Normalize")]
+        public Vector3 NormalizeBuiltIn()
         {
-            Float3Sse f1 = new Float3Sse(1, 1, 2);
-            Matrix m = Matrix.Identity;
-            Float3Sse result = new Float3Sse();
+            var result = Vector3.Zero;
             for (var i = 0; i < 1000; i++)
             {
-                result += Matrix.MultiplyVector(m, f1);
+                result += Vector3.Normalize(new Vector3(i, i, i));
             }
 
             return result;
         }
 
         [Benchmark]
-        [BenchmarkCategory("GetElement")]
-        public float GetElement()
+        [BenchmarkCategory("Normalize")]
+        public Float3 NormalizeUnsafe()
         {
-            Vector128<float> f1 = Vector128.Create(1f, 4f, 5f, 3f);
-            float result = 0;
+            var result = Float3.Zero;
             for (var i = 0; i < 1000; i++)
             {
-                result += f1.GetElement(i % 3);
+                result += Float3.NormalizeUnsafe(new Float3(i, i, i));
             }
 
             return result;
         }
 
-        [Benchmark]
-        [BenchmarkCategory("GetElement")]
-        public unsafe float GetElementUnsafe()
-        {
-            Vector128<float> f1 = Vector128.Create(1f, 4f, 5f, 3f);
-            float result = 0;
-            for (var i = 0; i < 1000; i++)
-            {
-                result += *((float*) &f1 + i % 3);
-            }
+        #region Commented
 
-            return result;
-        }
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("Cross")]
+        // public Float3Sse Cross()
+        // {
+        //     Float3Sse f1 = new Float3Sse(1, 1, 2);
+        //     Float3Sse result = new Float3Sse();
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += result.Cross(f1);
+        //     }
+        //
+        //     return result;
+        // }
+        //
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("Cross")]
+        // public Float3Sse CrossSse()
+        // {
+        //     Float3Sse f1 = new Float3Sse(1, 1, 2);
+        //     Float3Sse result = new Float3Sse();
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += Float3Sse.Cross(result,f1);
+        //     }
+        //
+        //     return result;
+        // }
+        // [Benchmark]
+        // [BenchmarkCategory("Multiply")]
+        // public Float3Sse MultiplyNonstaticSse()
+        // {
+        //     Float3Sse f1 = new Float3Sse(1, 1, 2);
+        //     Matrix m = Matrix.Identity;
+        //     Float3Sse result = new Float3Sse();
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += m.MultiplyVector(f1);
+        //     }
+        //
+        //     return result;
+        // }
 
-
-        [Benchmark]
-        [BenchmarkCategory("Create")]
-        public Vector128<float> Create()
-        {
-            Vector128<float> result = Vector128<float>.Zero;
-            for (var i = 0; i < 1000; i++)
-            {
-                result = Vector128.Create(i, i / 2f, 5f, 3f);
-            }
-
-            return result;
-        }
-
-        [Benchmark]
-        [BenchmarkCategory("Create")]
-        public unsafe Vector128<float> CreateUnsafe()
-        {
-            Vector128<float> result = Vector128<float>.Zero;
-            for (var i = 0; i < 1000; i++)
-            {
-                var t = (i, i / 2f, 5f, 3f);
-                result = *(Vector128<float>*)&t;
-            }
-
-            return result;
-        }
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("Multiply")]
+        // public Float3 MultiplyBase()
+        // {
+        //     Float3 f1 = new Float3(1, 1, 2);
+        //     Matrix m = Matrix.Identity;
+        //     Float3 result = new Float3();
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += m.MultiplyVector(f1);
+        //     }
+        //
+        //     return result;
+        // }
+        //
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("Multiply")]
+        // public Float3Sse MultiplySse()
+        // {
+        //     Float3Sse f1 = new Float3Sse(1, 1, 2);
+        //     Matrix m = Matrix.Identity;
+        //     Float3Sse result = new Float3Sse();
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += Matrix.MultiplyVector(m, f1);
+        //     }
+        //
+        //     return result;
+        // }
+        // //
+        //
+        //
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("GetElement")]
+        // public float GetElement()
+        // {
+        //     Vector128<float> f1 = Vector128.Create(1f, 4f, 5f, 3f);
+        //     float result = 0;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += f1.GetElement(i % 3);
+        //     }
+        //
+        //     return result;
+        // }
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("GetElement")]
+        // public unsafe float GetElementUnsafe()
+        // {
+        //     Vector128<float> f1 = Vector128.Create(1f, 4f, 5f, 3f);
+        //     float result = 0;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result += *((float*) &f1 + i % 3);
+        //     }
+        //
+        //     return result;
+        // }
+        //
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("Create")]
+        // public Vector128<float> Create()
+        // {
+        //     Vector128<float> result = Vector128<float>.Zero;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         result = Vector128.Create(i, i / 2f, 5f, 3f);
+        //     }
+        //
+        //     return result;
+        // }
+        //
+        // [Benchmark]
+        // [BenchmarkCategory("Create")]
+        // public unsafe Vector128<float> CreateUnsafe()
+        // {
+        //     Vector128<float> result = Vector128<float>.Zero;
+        //     for (var i = 0; i < 1000; i++)
+        //     {
+        //         var t = (i, i / 2f, 5f, 3f);
+        //         result = *(Vector128<float>*)&t;
+        //     }
+        //
+        //     return result;
+        // }
 
         // [Benchmark]
         // [BenchmarkCategory("Multiply")]
@@ -375,18 +459,6 @@ namespace Daeira.Benchmark
         //     return result;
         // }
         //
-        // [Benchmark]
-        // [BenchmarkCategory("Normalize")]
-        // public Float3 Normalize()
-        // {
-        //     var result = Float3.Zero;
-        //     for (var i = 0; i < 1000; i++)
-        //     {
-        //         result += new Float3(i, i, i).Normalize() * Float3.UnitX;
-        //     }
-        //
-        //     return result;
-        // }
         //
         // [Benchmark]
         // [BenchmarkCategory("Normalize")]
@@ -413,5 +485,7 @@ namespace Daeira.Benchmark
         //
         //     return result;
         // }
+
+        #endregion
     }
 }

@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 
+//Following code is based on .NET source provided by .NET Foundation
+
 namespace Daeira
 {
     public readonly struct ComplexF : IEquatable<ComplexF>, IFormattable

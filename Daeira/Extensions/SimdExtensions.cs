@@ -4,6 +4,8 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
 
+// Following methods are based on source code of .NET provided by .NET Foundation
+
 namespace Daeira.Extensions
 {
     public static class SimdExtensions

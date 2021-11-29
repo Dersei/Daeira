@@ -26,6 +26,14 @@ namespace Daeira
             B = vector.Z;
             A = a;
         }
+        
+        public FloatColor(in Float3Sse vector, float a = 1f)
+        {
+            R = vector.X;
+            G = vector.Y;
+            B = vector.Z;
+            A = a;
+        }
 
         public FloatColor(in Float4 vector)
         {
@@ -116,7 +124,7 @@ namespace Daeira
             return new(r, g, b, a);
         }
 
-        public static FloatColor FromRgba(int r, int g, int b, int a = 1)
+        public static FloatColor FromRgba(int r, int g, int b, int a = 255)
         {
             return new(r / 255f, g / 255f, b / 255f, a / 255f);
         }
@@ -143,6 +151,7 @@ namespace Daeira
             var a = (byte) ((color >> 24) & 255);
             return FromArgb(a, r, g, b);
         }
+        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint ClampValue(float value)
@@ -168,7 +177,7 @@ namespace Daeira
         /// Returns <c>FloatColor</c> as <c>uint</c> in ARGB format
         /// </summary>
         /// <returns></returns>
-        public uint Argb()
+        public uint ToArgb()
         {
             return ToUint();
         }
@@ -177,7 +186,7 @@ namespace Daeira
         /// Returns <c>FloatColor</c> as <c>uint</c> in RGB format with A = 255
         /// </summary>
         /// <returns></returns>
-        public uint Rgb()
+        public uint ToRgb()
         {
             const uint a = 255u;
             var r = ClampValue(R * 255);
@@ -194,27 +203,7 @@ namespace Daeira
         {
             return color.ToUint();
         }
-
-        // public static implicit operator Float4(in FloatColor color)
-        // {
-        //     return new(color.R, color.G, color.B, color.A);
-        // }
-        //
-        // public static implicit operator FloatColor(in Float4 vector)
-        // {
-        //     return new(vector);
-        // }
-        //
-        // public static implicit operator Float3(in FloatColor color)
-        // {
-        //     return new(color.R, color.G, color.B);
-        // }
-        //
-        // public static implicit operator FloatColor(in Float3 vector)
-        // {
-        //     return new(vector);
-        // }
-
+        
         /// <summary>
         /// Converts <c>System.Drawing.Color</c> to <c>FloatColor</c>
         /// </summary>
@@ -228,9 +217,14 @@ namespace Daeira
             var b = (byte) color.B * 255;
             return System.Drawing.Color.FromArgb(a, r, g, b);
         }
+        
+        public static implicit operator FloatColor(System.Drawing.Color color)
+        {
+            return FromRgba(color.R, color.G, color.B, color.A);
+        }
 
         /// <summary>
-        /// (0,0,0,0)
+        /// (0,0,0,1)
         /// </summary>
         public static readonly FloatColor Black = new(0, 0, 0);
         /// <summary>
@@ -289,6 +283,7 @@ namespace Daeira
                 $"FloatColor - ({R.ToString(format, formatProvider)}, {G.ToString(format, formatProvider)}, {B.ToString(format, formatProvider)})";
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FloatColor LerpUnclamped(in FloatColor a, in FloatColor b, float t)
         {
             return new(
@@ -304,6 +299,28 @@ namespace Daeira
             t = MathExtensions.Clamp01(t);
             return LerpUnclamped(a, b, t);
         }
+        
+        public static FloatColor LerpWithoutAlpha(in FloatColor a, in FloatColor b, float t)
+        {
+            t = MathExtensions.Clamp01(t);
+            return new FloatColor(
+                a.R + (b.R - a.R) * t,
+                a.G + (b.G - a.G) * t,
+                a.B + (b.B - a.B) * t
+            );
+        }
+        
+        public static FloatColor Lerp(in FloatColor a, in FloatColor b, in FloatColor t)
+        {
+            var tR = MathExtensions.Clamp01(t.R);
+            var tG = MathExtensions.Clamp01(t.G);
+            var tB = MathExtensions.Clamp01(t.B);
+            return new FloatColor(
+                a.R + (b.R - a.R) * tR,
+                a.G + (b.G - a.G) * tG,
+                a.B + (b.B - a.B) * tB
+            );
+        }
 
         public float this[int index] =>
             index switch
@@ -314,7 +331,7 @@ namespace Daeira
                 3 => A,
                 _ => throw new IndexOutOfRangeException("Invalid FloatColor index(" + index + ")!")
             };
-
+        
         // Convert a set of HSV values to an RGB Color.
         public static FloatColor FromHsv(float h, float s, float v, bool hdr)
         {
@@ -382,7 +399,15 @@ namespace Daeira
             return new FloatColor(r, g, b);
         }
         
-        public static FloatColor AlphaToOne(FloatColor color) => new(color.R, color.G, color.B);
+        public static FloatColor ConvertToHdr(in FloatColor color, float gamma = 2.2f, float exposure = 1.0f)
+        {
+            var r = MathF.Pow(1 - MathF.Exp(-color.R * exposure), 1.0f / gamma);
+            var g = MathF.Pow(1 - MathF.Exp(-color.G * exposure), 1.0f / gamma);
+            var b = MathF.Pow(1 - MathF.Exp(-color.B * exposure), 1.0f / gamma);
+            return new FloatColor(r, g, b);
+        }
+        
+        public static FloatColor AlphaToOne(in FloatColor color) => new(color.R, color.G, color.B);
         public FloatColor AlphaToOne() => new(R, G, B);
         public FloatColor WithAlpha(float a) => new(R, G, B, a);
     }

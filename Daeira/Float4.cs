@@ -194,8 +194,36 @@ namespace Daeira
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float4 Normalize(in Float4 vector)
         {
-            return vector.Normalize();
+            var length = vector.Length;
+            if (length > Epsilon)
+            {
+                return vector / length;
+            }
+
+            return Zero;
         }
+        
+           
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float LengthDot()
+        {
+            float ls = Float4.Dot(this, this);
+            return MathF.Sqrt(ls);
+        }
+
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float4 NormalizeDot(in Float4 v)
+        {
+            float length = v.LengthDot();
+            return v / length;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float4 NormalizeUnsafe(in Float4 v) => v / v.Length;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float4 NormalizeUnsafe() => this / Length;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Dot(in Float4 v)
@@ -355,6 +383,9 @@ namespace Daeira
             array[index + 2] = Z;
             array[index + 3] = W;
         }
+
+
+        public Float3 XYZ() => new(X, Y, Z);
 
         public static implicit operator Float4((float x, float y, float z, float w) values) =>
             new(values.x, values.y, values.z, values.w);

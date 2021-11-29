@@ -375,7 +375,7 @@ namespace Daeira
             new(values.x, values.y);
 
         public static implicit operator (float x, float y)(in Float2 v) => (v.X, v.Y);
-
+        
         public void Deconstruct(out float x, out float y) => (x, y) = (X, Y);
     }
 }

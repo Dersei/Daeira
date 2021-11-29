@@ -46,20 +46,26 @@ namespace Daeira
             _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
 
-        public static readonly Float3Sse Zero = new Float3Sse(0, 0, 0);
-        public static readonly Float3Sse One = new Float3Sse(1, 1, 1);
-        public static readonly Float3Sse UnitX = new Float3Sse(1f, 0f, 0f);
-        public static readonly Float3Sse UnitY = new Float3Sse(0f, 1f, 0f);
-        public static readonly Float3Sse UnitZ = new Float3Sse(0f, 0f, 1f);
+        public static readonly Float3Sse Zero = new(0, 0, 0);
+        public static readonly Float3Sse One = new(1, 1, 1);
+        public static readonly Float3Sse Up = new(0f, 1f, 0);
+        public static readonly Float3Sse Down = new(0f, -1f, 0);
+        public static readonly Float3Sse Left = new(-1f, 0, 0);
+        public static readonly Float3Sse Right = new(1f, 0, 0);
+        public static readonly Float3Sse Forward = new(0f, 0f, 1f);
+        public static readonly Float3Sse Back = new(0f, 0f, -1f);
+        public static readonly Float3Sse UnitX = new(1f, 0f, 0f);
+        public static readonly Float3Sse UnitY = new(0f, 1f, 0f);
+        public static readonly Float3Sse UnitZ = new(0f, 0f, 1f);
 
         private const float Epsilon = 0.00001f;
         private const float DoubledEpsilon = Epsilon * Epsilon;
 
         public static readonly Float3Sse PositiveInfinity =
-            new Float3Sse(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+            new(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
 
         public static readonly Float3Sse NegativeInfinity =
-            new Float3Sse(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
+            new(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
 
         public float Length => Sse.SqrtScalar(Sse41.DotProduct(Vector, Vector, 0b01110001)).GetElement(0);
 
@@ -88,29 +94,25 @@ namespace Daeira
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse operator *(in Float3Sse v, float scalar)
         {
-            var scalarVector = Vector128.Create(scalar);
-            return new Float3Sse(Sse.Multiply(v.Vector, scalarVector));
+            return new(Sse.Multiply(v.Vector, Vector128.Create(scalar)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse operator *(float scalar, in Float3Sse v)
         {
-            var scalarVector = Vector128.Create(scalar);
-            return new Float3Sse(Sse.Multiply(scalarVector, v.Vector));
+            return new(Sse.Multiply(Vector128.Create(scalar), v.Vector));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse operator /(in Float3Sse v, float scalar)
         {
-            var scalarVector = Vector128.Create(1f / scalar);
-            return new Float3Sse(Sse.Multiply(v.Vector, scalarVector));
+            return new(Sse.Multiply(v.Vector, Vector128.Create(1f / scalar)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse operator /(float scalar, in Float3Sse v)
         {
-            var scalarVector = Vector128.Create(scalar);
-            return new Float3Sse(Sse.Divide(scalarVector, v.Vector));
+            return new(Sse.Divide(Vector128.Create(scalar), v.Vector));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -186,13 +188,13 @@ namespace Daeira
         {
             return new(Sse.Multiply(Vector, Sse.ReciprocalSqrt(Sse41.DotProduct(Vector, Vector, 0b01110111))));
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Float3Sse NormalizeExact()
         {
             return new(Sse.Divide(Vector, Sse.Sqrt(Sse41.DotProduct(Vector, Vector, 0b01110111))));
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse Normalize(in Float3Sse vector)
         {
@@ -210,7 +212,37 @@ namespace Daeira
         {
             return Sse41.DotProduct(a.Vector, b.Vector, 0b01110001).GetElement(0);
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static byte Shuffle(int z, int y, int x, int w)
+        {
+            return (byte) ((z << 6) | (y << 4) | (x << 2) | w);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float3Sse Cross(in Float3Sse v)
+        {
+            var x1 = X;
+            var y1 = Y;
+            var z1 = Z;
+            var x2 = v.X;
+            var y2 = v.Y;
+            var z2 = v.Z;
+            return new Float3Sse(y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Float3Sse Cross(in Float3Sse v1, in Float3Sse v2)
+        {
+            var x1 = v1.X;
+            var y1 = v1.Y;
+            var z1 = v1.Z;
+            var x2 = v2.X;
+            var y2 = v2.Y;
+            var z2 = v2.Z;
+            return new Float3Sse(y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2);
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse Project(in Float3Sse a, in Float3Sse b)
@@ -262,21 +294,21 @@ namespace Daeira
 
         public static Float3Sse Abs(in Float3Sse value)
         {
-            return new Float3Sse(
+            return new(
                 MathF.Abs(value.X),
                 MathF.Abs(value.Y),
                 MathF.Abs(value.Z)
             );
         }
 
-        public Vector4 ToBuiltIn()
+        public Vector3 ToBuiltIn()
         {
-            return Vector.AsVector4();
+            return Vector.AsVector3();
         }
 
         public static Float3Sse FromBuiltIn(Vector3 vector4)
         {
-            return new Float3Sse(vector4.AsVector128());
+            return new(vector4.AsVector128());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -292,7 +324,7 @@ namespace Daeira
         }
 
         private static readonly Vector128<float> Vector2 = Vector128.Create(2f);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse Reflect(in Float3Sse vector, in Float3Sse normal)
         {
@@ -303,9 +335,30 @@ namespace Daeira
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Float3Sse Reflect(in Float3Sse normal)
+        {
+            return new(Sse.Subtract(Vector,
+                Sse.Multiply(Vector2,
+                    Sse.Multiply(normal.Vector,
+                        Sse41.DotProduct(Vector, normal.Vector, 0b01110111)))));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Float3Sse Saturate(in Float3Sse vector)
         {
             return new(Sse.Max(Sse.Min(vector.Vector, One.Vector), Vector128<float>.Zero));
+        }
+
+        public static Float3Sse Transform(in Float3Sse vector, float scale, in Float3Sse position,
+            in Float3Sse rotationAxis,
+            float angle)
+        {
+            var matrixScale = Matrix4x4.CreateScale(scale);
+            var matrixPosition = Matrix4x4.CreateTranslation(position.ToBuiltIn());
+            var matrixRotation =
+                Matrix4x4.CreateFromAxisAngle(rotationAxis.ToBuiltIn(), angle * MathExtensions.Deg2Rad);
+            var transformMatrix = matrixScale * matrixRotation * matrixPosition;
+            return FromBuiltIn(Vector3.Transform(vector.ToBuiltIn(), transformMatrix));
         }
 
 
@@ -341,7 +394,9 @@ namespace Daeira
         }
 
         public static implicit operator Float3Sse((float x, float y, float z) values) =>
-            new Float3Sse(values.x, values.y, values.z);
+            new(values.x, values.y, values.z);
+
+        public Float2 XY() => new(X, Y);
 
         public static implicit operator (float x, float y, float z)(in Float3Sse v) => (v.X, v.Y, v.Z);
 

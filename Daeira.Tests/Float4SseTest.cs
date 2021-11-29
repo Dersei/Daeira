@@ -5,71 +5,71 @@ namespace Daeira.Tests
 {
     public class Float4SseTest
     {
-         [Fact]
+        [Fact]
         public void Addition()
         {
             var f1 = new Float4Sse(1.5f, 1f, 4.5f, 6.7f);
             var f2 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f);
             var result = new Float4Sse(18.4f, 124f, 139f, 1103.6f);
-            Assert.Equal(result, f1+f2);
+            Assert.Equal(result, f1 + f2);
         }
-        
+
         [Fact]
         public void Subtraction()
         {
             var f1 = new Float4Sse(1.5f, 1f, 4.5f, 6.7f);
             var f2 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f);
             var result = new Float4Sse(15.4f, 122f, 130f, 1090.2001f);
-            Assert.Equal(result, f2-f1);
+            Assert.Equal(result, f2 - f1);
         }
-        
+
         [Fact]
         public void Multiplication()
         {
             var f1 = new Float4Sse(1.5f, 1f, 4.5f, 6.7f);
             var f2 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f);
             var result = new Float4Sse(25.349998f, 123f, 605.25f, 7349.23f);
-            Assert.Equal(result, f1*f2);
-            Assert.Equal(f2*f1, f1*f2);
+            Assert.Equal(result, f1 * f2);
+            Assert.Equal(f2 * f1, f1 * f2);
         }
-        
+
         [Fact]
         public void Division()
         {
-            var f1 = 2f;
+            const float f1 = 2f;
             var f2 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f);
             var result = new Float4Sse(0.1183432f, 0.016260162f, 0.014869888f, 0.0018233202f);
-            Assert.Equal(result, f1/f2);
+            Assert.Equal(result, f1 / f2);
         }
-        
+
         [Fact]
         public void InvertDivision()
         {
-            var f1 = 2f;
+            const float f1 = 2f;
             var f2 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f);
             var result = new Float4Sse(8.45f, 61.5f, 67.25f, 548.45f);
-            Assert.Equal(result, f2/f1);
+            Assert.Equal(result, f2 / f1);
         }
-        
+
         [Fact]
         public void Dot()
         {
             var f1 = new Float4Sse(1.5f, 1f, 4.5f, 6.7f);
             var f2 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f);
-            var result = 8102.83f;
+            const float result = 8102.83f;
             Assert.Equal(result, f1.Dot(f2));
             Assert.Equal(f1.Dot(f2), f2.Dot(f1));
         }
-        
+
         [Fact]
         public void Reflect()
         {
             var f1 = new Float4Sse(1.5f, 1f, 4.5f, 6.7f);
             var f2 = new Float4Sse(16.9f, 123f, 134.5f, 1096.9f);
             var result = new Float4Sse(-273874.16f, -1993295.2f, -2179656.8f, -17775984f);
-            Assert.Equal(result, Float4Sse.Reflect(f1,f2));
+            Assert.Equal(result, Float4Sse.Reflect(f1, f2));
         }
-        
+
         [Fact]
         public void Saturate()
         {
@@ -77,7 +77,7 @@ namespace Daeira.Tests
             var result = new Float4Sse(0.9f, 0, 1, 1);
             Assert.Equal(result, Float4Sse.Saturate(f2));
         }
-        
+
         [Fact]
         public void Normalize()
         {
@@ -86,7 +86,7 @@ namespace Daeira.Tests
             Assert.True(f1.Length.IsAbout(1));
             Assert.True(f2.Length.IsAbout(1));
         }
-        
+
         [Fact]
         public void Equality()
         {

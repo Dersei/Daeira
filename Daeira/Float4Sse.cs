@@ -35,6 +35,11 @@ namespace Daeira
         {
         }
 
+        public Float4Sse(in Float3Sse value, float w) : this(value.X, value.Y, value.Z, w)
+        {
+        }
+
+        
         public Float4Sse(in Float2 value1, in Float2 value2) : this(value1.X, value1.Y, value2.X, value2.Y)
         {
         }
@@ -354,5 +359,7 @@ namespace Daeira
         public static implicit operator (float x, float y, float z, float w)(in Float4Sse v) => (v.X, v.Y, v.Z, v.W);
 
         public void Deconstruct(out float x, out float y, out float z, out float w) => (x, y, z, w) = (X, Y, Z, W);
+        
+        public Float3Sse XYZ() => new(X, Y, Z);
     }
 }
